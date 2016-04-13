@@ -1,9 +1,4 @@
 <resources>
     <string name="app_name">Sunshine</string>
     <string name="action_settings">Settings</string>
-    <string name="cloudy_icon">cloudy icon</string>
-    <string name="_9degree">9 ℃</string>
-    <string name="cloudy">Cloudy</string>
-    <string name="_17degree">17 ℃</string>
-    <string name="today_april_12">Today, April 12</string>
 </resources>

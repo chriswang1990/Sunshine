@@ -12,52 +12,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/today_april_12"
-        android:id="@+id/todayDate"
+        android:text="Hello World!"
+        android:id="@+id/helloWorld"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/_17degree"
-        android:id="@+id/highestTemp"
-        android:layout_below="@+id/todayDate"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/_9degree"
-        android:id="@+id/lowestTemp"
-        android:layout_below="@+id/highestTemp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <ImageView
-        android:layout_width="65dp"
-        android:layout_height="65dp"
-        android:scaleType="fitXY"
-        android:id="@+id/cloudy"
-        android:contentDescription="@string/cloudy_icon"
-        android:src="@mipmap/cloudy"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/cloudy"
-        android:id="@+id/todayWeather"
-        android:layout_alignBottom="@+id/highestTemp"
-        android:layout_toLeftOf="@+id/cloudy"
-        android:layout_toStartOf="@+id/cloudy" />
-
 </RelativeLayout>
