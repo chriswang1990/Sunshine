@@ -22,7 +22,7 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-        ArrayList<String> forecastData= new ArrayList<>();
+        ArrayList<String> forecastData = new ArrayList<>();
         forecastData.add("Today - Sunny - 20/10");
         forecastData.add("Tomorrow - Rainy - 15/9");
         forecastData.add("Wednesday - Sunny - 22/10");
