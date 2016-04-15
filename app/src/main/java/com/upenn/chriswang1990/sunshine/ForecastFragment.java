@@ -47,6 +47,8 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
+            FetchWeatherTask getData = new FetchWeatherTask();
+            getData.execute();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -71,7 +73,6 @@ public class ForecastFragment extends Fragment {
         forecastList.setAdapter(forecastAdapter);
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
-        new FetchWeatherTask().execute();
         return rootView;
     }
 
@@ -99,7 +100,7 @@ public class ForecastFragment extends Fragment {
 
                 // Read the input stream into a String
                 InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder builder = new StringBuilder();
+                StringBuilder buffer = new StringBuilder();
                 if (inputStream == null) {
                     // Nothing to do.
                     return null;
@@ -110,14 +111,14 @@ public class ForecastFragment extends Fragment {
                     // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                     // But it does make debugging a *lot* easier if you print out the completed
                     // buffer for debugging.
-                    builder.append(line);
-                    builder.append("\n");
+                    buffer.append(line);
+                    buffer.append("\n");
                 }
-                if (builder.length() == 0) {
+                if (buffer.length() == 0) {
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
-                forecastJsonStr = builder.toString();
+                forecastJsonStr = buffer.toString();
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
