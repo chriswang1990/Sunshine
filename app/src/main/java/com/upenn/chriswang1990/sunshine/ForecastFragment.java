@@ -175,7 +175,6 @@ public class ForecastFragment extends Fragment {
                 for (String i : strings) {
                     forecastAdapter.add(i);
                 }
-                forecastAdapter.notifyDataSetChanged();
             }
         }
 
