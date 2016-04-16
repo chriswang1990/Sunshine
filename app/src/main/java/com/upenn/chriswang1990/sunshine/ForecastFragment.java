@@ -168,6 +168,15 @@ public class ForecastFragment extends Fragment {
             }
         }
 
+        @Override
+        protected void onPostExecute(String[] strings) {
+            forecastAdapter.clear();
+            for (String i : strings) {
+                forecastAdapter.add(i);
+            }
+            forecastAdapter.notifyDataSetChanged();
+        }
+
         /* The date/time conversion code is going to be moved outside the asynctask later,
         * so for convenience we're breaking it out into its own method now.
         */
