@@ -83,7 +83,9 @@ public class ForecastFragment extends Fragment {
         forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast toast = Toast.makeText(getActivity(), (String) parent.getItemAtPosition(position),Toast
+                Toast toast = Toast.makeText(getActivity().getApplicationContext(), (String) parent.getItemAtPosition
+                        (position),
+                        Toast
                         .LENGTH_SHORT);
                 //CharSequence weatherInfo = parent.getSelectedItem();
                 toast.show();
@@ -209,8 +211,7 @@ public class ForecastFragment extends Fragment {
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
-            String highLowStr = roundedHigh + "/" + roundedLow;
-            return highLowStr;
+            return roundedHigh + "/" + roundedLow;
         }
 
         /**
