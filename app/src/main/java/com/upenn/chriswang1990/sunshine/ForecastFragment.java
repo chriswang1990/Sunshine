@@ -12,8 +12,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -78,6 +80,16 @@ public class ForecastFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView forecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
         forecastList.setAdapter(forecastAdapter);
+        forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast toast = Toast.makeText(getActivity(), (String) parent.getItemAtPosition(position),Toast
+                        .LENGTH_SHORT);
+                //CharSequence weatherInfo = parent.getSelectedItem();
+                toast.show();
+                //toast.makeText(getActivity(), weatherInfo, Toast.LENGTH_SHORT).show();
+            }
+        });
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         return rootView;
