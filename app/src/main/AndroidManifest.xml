@@ -29,6 +29,15 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.upenn.chriswang1990.sunshine.MainActivity"/>
         </activity>
+        <activity android:name=".SettingsActivity"
+                  android:label="@string/action_settings"
+                  android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.upenn.chriswang1990.sunshine.MainActivity"/>
+        </activity>
+
+
     </application>
 
 </manifest>
