@@ -39,6 +39,7 @@ import java.util.GregorianCalendar;
 public class ForecastFragment extends Fragment {
 
     ArrayAdapter<String> forecastAdapter;
+    SharedPreferences userPreferences;
 
     public ForecastFragment() {
     }
@@ -109,7 +110,7 @@ public class ForecastFragment extends Fragment {
 
     public void updateWeather() {
         FetchWeatherTask getData = new FetchWeatherTask();
-        SharedPreferences userPreferences = PreferenceManager.getDefaultSharedPreferences
+        userPreferences = PreferenceManager.getDefaultSharedPreferences
               (getActivity());
         String location = userPreferences.getString(getString(R.string.pref_location_key),
               getString(R.string.pref_location_default));
@@ -278,7 +279,14 @@ public class ForecastFragment extends Fragment {
                 JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
-
+                userPreferences = PreferenceManager.getDefaultSharedPreferences
+                      (getActivity());
+                String unitSelect = userPreferences.getString(getString(R.string.pref_unit_key), getString(R
+                      .string.pref_unit_default));
+                if (unitSelect.equals("imperial")) {
+                    high = high * 1.8 + 32;
+                    low = low * 1.8 + 32;
+                }
                 highAndLow = formatHighLows(high, low);
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
