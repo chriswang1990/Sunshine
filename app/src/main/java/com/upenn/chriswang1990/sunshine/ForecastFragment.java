@@ -1,9 +1,11 @@
 package com.upenn.chriswang1990.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -57,7 +59,13 @@ public class ForecastFragment extends Fragment {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             FetchWeatherTask getData = new FetchWeatherTask();
-            getData.execute("94085");
+            SharedPreferences userPreferences = PreferenceManager.getDefaultSharedPreferences
+                  (getActivity());
+            String location = userPreferences.getString(getString(R.string.pref_location_key),
+                  getString(R.string.pref_location_default));
+
+            //String zipCode =
+            getData.execute(location);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -107,7 +115,7 @@ public class ForecastFragment extends Fragment {
         // Will contain the raw JSON response as a string.
         String forecastJsonStr = null;
 
-        protected String[] doInBackground(String... zipcode) {
+        protected String[] doInBackground(String... location) {
             try {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
@@ -124,7 +132,7 @@ public class ForecastFragment extends Fragment {
                 Uri.Builder builder = new Uri.Builder();
                 builder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
                       ("2.5").appendPath("forecast").appendPath("daily?");
-                builder.appendQueryParameter(QUERY_PARAM, zipcode[0]).appendQueryParameter
+                builder.appendQueryParameter(QUERY_PARAM, location[0]).appendQueryParameter
                       (UNITS_PARAM, units).appendQueryParameter(DAYS_PARAM, ((Integer) days)
                       .toString()).appendQueryParameter(APPID_PARAM, BuildConfig
                       .OPEN_WEATHER_MAP_API_KEY);
