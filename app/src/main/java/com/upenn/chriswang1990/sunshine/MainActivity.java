@@ -1,14 +1,18 @@
 package com.upenn.chriswang1990.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
-
+    private final String LOG_TAG = MainActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,9 +41,25 @@ public class MainActivity extends AppCompatActivity {
             startActivity(settingsIntent);
             return true;
         }
-
+        if (id == R.id.action_map) {
+            openPreferredLocationInMap();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
-
+    public void openPreferredLocationInMap() {
+        SharedPreferences userPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String location = userPreferences.getString(getString(R.string.pref_location_key),
+              getString(R.string.pref_location_default));
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW);
+        Uri geoLocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q", location)
+              .build();
+        mapIntent.setData(geoLocation);
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Log.d(LOG_TAG, "Couldn't call " + location + ", no receiving apps installed!");
+        }
+    }
 }

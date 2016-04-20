@@ -9,4 +9,5 @@
     <string name="pref_unit_label">Unit Setting</string>
     <string name="pref_unit_default">metric</string>
     <string name="pref_unit_key">unit</string>
+    <string name="action_map">Map location</string>
 </resources>
