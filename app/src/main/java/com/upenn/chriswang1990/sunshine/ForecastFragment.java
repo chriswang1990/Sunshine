@@ -1,8 +1,11 @@
 package com.upenn.chriswang1990.sunshine;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -15,7 +18,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,6 +39,7 @@ import java.util.GregorianCalendar;
 public class ForecastFragment extends Fragment {
 
     ArrayAdapter<String> forecastAdapter;
+    SharedPreferences userPreferences;
 
     public ForecastFragment() {
     }
@@ -56,17 +59,24 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            FetchWeatherTask getData = new FetchWeatherTask();
-            getData.execute("94085");
+            updateWeather();
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ArrayList<String> forecastData = new ArrayList<>();
+        final ArrayList<String> forecastData = new ArrayList<>();
+        /*
+        //comment out the fake data
         forecastData.add("Today - Sunny - 20/10");
         forecastData.add("Tomorrow - Rainy - 15/9");
         forecastData.add("Wednesday - Sunny - 22/10");
@@ -74,35 +84,54 @@ public class ForecastFragment extends Fragment {
         forecastData.add("Friday - Sunny - 23/13");
         forecastData.add("Saturday - Sunny - 26/16");
         forecastData.add("Sunny - Sunny - 25/15");
-
+        */
         forecastAdapter = new ArrayAdapter<>(getActivity(), R.layout
-                .list_item_forecast, R.id.list_item_forecast_textview, forecastData);
+              .list_item_forecast, R.id.list_item_forecast_textview, forecastData);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView forecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
         forecastList.setAdapter(forecastAdapter);
         forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast toast = Toast.makeText(getActivity(), (String) parent.getItemAtPosition(position),Toast
-                        .LENGTH_SHORT);
-                //CharSequence weatherInfo = parent.getSelectedItem();
-                toast.show();
-                //toast.makeText(getActivity(), weatherInfo, Toast.LENGTH_SHORT).show();
+        /*
+        //toast for testing
+        Toast toast = Toast.makeText(getActivity().getApplicationContext(), (String)
+            parent.getItemAtPosition(position), Toast.LENGTH_SHORT);
+        toast.show();
+        */
+                String forecastStr = forecastAdapter.getItem(position);
+                Intent detailIntent = new Intent(getActivity(), DetailActivity.class).putExtra
+                      (Intent.EXTRA_TEXT, forecastStr);
+                userPreferences = PreferenceManager.getDefaultSharedPreferences
+                      (getActivity());
+                SharedPreferences.Editor editor = userPreferences.edit();
+                editor.putString("forecastStr", forecastStr);
+                editor.apply();
+                startActivity(detailIntent);
             }
         });
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
         return rootView;
+    }
+
+    public void updateWeather() {
+        FetchWeatherTask getData = new FetchWeatherTask();
+        userPreferences = PreferenceManager.getDefaultSharedPreferences
+              (getActivity());
+        String location = userPreferences.getString(getString(R.string.pref_location_key),
+              getString(R.string.pref_location_default));
+        getData.execute(location);
     }
 
     public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
+        // These two need to be declared outside the try/catch
+        // so that they can be closed in the finally block.
         // Will contain the raw JSON response as a string.
         String forecastJsonStr = null;
 
-        protected String[] doInBackground(String... zipcode) {
+        protected String[] doInBackground(String... location) {
             try {
                 // Construct the URL for the OpenWeatherMap query
                 // Possible parameters are avaiable at OWM's forecast API page, at
@@ -118,11 +147,11 @@ public class ForecastFragment extends Fragment {
 
                 Uri.Builder builder = new Uri.Builder();
                 builder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
-                        ("2.5").appendPath("forecast").appendPath("daily?");
-                builder.appendQueryParameter(QUERY_PARAM, zipcode[0]).appendQueryParameter
-                        (UNITS_PARAM, units).appendQueryParameter(DAYS_PARAM, ((Integer) days)
-                        .toString()).appendQueryParameter(APPID_PARAM, BuildConfig
-                        .OPEN_WEATHER_MAP_API_KEY);
+                      ("2.5").appendPath("forecast").appendPath("daily?");
+                builder.appendQueryParameter(QUERY_PARAM, location[0]).appendQueryParameter
+                      (UNITS_PARAM, units).appendQueryParameter(DAYS_PARAM, ((Integer) days)
+                      .toString()).appendQueryParameter(APPID_PARAM, BuildConfig
+                      .OPEN_WEATHER_MAP_API_KEY);
                 URL url = new URL(builder.build().toString());
                 // Create the request to OpenWeatherMap, and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -209,19 +238,18 @@ public class ForecastFragment extends Fragment {
             long roundedHigh = Math.round(high);
             long roundedLow = Math.round(low);
 
-            String highLowStr = roundedHigh + "/" + roundedLow;
-            return highLowStr;
+            return roundedHigh + "/" + roundedLow;
         }
 
         /**
          * Take the String representing the complete forecast in JSON Format and
          * pull out the data we need to construct the Strings needed for the wireframes.
-         * <p>
+         * <p/>
          * Fortunately parsing is easy:  constructor takes the JSON string and converts it
          * into an Object hierarchy for us.
          */
         private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
-                throws JSONException {
+              throws JSONException {
 
             // These are the names of the JSON objects that need to be extracted.
             final String OWM_LIST = "list";
@@ -256,7 +284,14 @@ public class ForecastFragment extends Fragment {
                 JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
                 double high = temperatureObject.getDouble(OWM_MAX);
                 double low = temperatureObject.getDouble(OWM_MIN);
-
+                userPreferences = PreferenceManager.getDefaultSharedPreferences
+                      (getActivity());
+                String unitSelect = userPreferences.getString(getString(R.string.pref_unit_key), getString(R
+                      .string.pref_unit_default));
+                if (unitSelect.equals("imperial")) {
+                    high = high * 1.8 + 32;
+                    low = low * 1.8 + 32;
+                }
                 highAndLow = formatHighLows(high, low);
                 resultStrs[i] = day + " - " + description + " - " + highAndLow;
             }
