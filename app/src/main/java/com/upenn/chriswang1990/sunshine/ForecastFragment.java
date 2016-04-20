@@ -99,9 +99,14 @@ public class ForecastFragment extends Fragment {
             parent.getItemAtPosition(position), Toast.LENGTH_SHORT);
         toast.show();
         */
-                String forecast = forecastAdapter.getItem(position);
+                String forecastStr = forecastAdapter.getItem(position);
                 Intent detailIntent = new Intent(getActivity(), DetailActivity.class).putExtra
-                      (Intent.EXTRA_TEXT, forecast);
+                      (Intent.EXTRA_TEXT, forecastStr);
+                userPreferences = PreferenceManager.getDefaultSharedPreferences
+                      (getActivity());
+                SharedPreferences.Editor editor = userPreferences.edit();
+                editor.putString("forecastStr", forecastStr);
+                editor.apply();
                 startActivity(detailIntent);
             }
         });
