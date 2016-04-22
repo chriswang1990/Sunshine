@@ -196,7 +196,6 @@ public class ForecastFragment extends Fragment {
                         Log.e(LOG_TAG, "Error closing stream", e);
                     }
                 }
-
             }
 
             int numDays = 7;
@@ -297,7 +296,6 @@ public class ForecastFragment extends Fragment {
             }
             return resultStrs;
         }
-
     }
 }
 

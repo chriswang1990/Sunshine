@@ -19,7 +19,6 @@ public class DetailActivity extends AppCompatActivity {
     SharedPreferences userPrefences;
     String forecastStr;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +32,7 @@ public class DetailActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_detail, menu);
         MenuItem shareItem = menu.findItem(R.id.action_share);
+        // Get the provider and hold onto it to set/change the share intent.
         ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat
               .getActionProvider(shareItem);
         userPrefences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -40,7 +40,7 @@ public class DetailActivity extends AppCompatActivity {
         if (shareActionProvider != null) {
             shareActionProvider.setShareIntent(createShareIntent());
         } else {
-            Log.e(LOG_TAG, "No sharing app installed");
+            Log.e(LOG_TAG, "No sharing app found!");
         }
         return true;
     }
@@ -51,10 +51,6 @@ public class DetailActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        // Get the provider and hold onto it to set/change the share intent.
-
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent settingsIntent = new Intent(this, SettingsActivity.class);
@@ -64,6 +60,10 @@ public class DetailActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Create the share intent with the forecast string and flag
+     * @return Intent for Share Action Provider
+     */
     public Intent createShareIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
@@ -71,5 +71,4 @@ public class DetailActivity extends AppCompatActivity {
         shareIntent.putExtra(Intent.EXTRA_TEXT, forecastStr + FORECAST_SHARE_HASHTAG);
         return shareIntent;
     }
-
 }
