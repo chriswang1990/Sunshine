@@ -100,6 +100,7 @@ public class TestDb extends AndroidTestCase {
         // entry columns
         assertTrue("Error: The database doesn't contain all of the required location entry columns",
                 locationColumnHashSet.isEmpty());
+        c.close();
         db.close();
     }
 
@@ -133,9 +134,11 @@ public class TestDb extends AndroidTestCase {
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
-
+        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", cursor, testValues);
+        assertFalse("Error: More than one record returned", cursor.moveToNext());
         // Finally, close the cursor and database
-
+        cursor.close();
+        db.close();
     }
 
     /*
