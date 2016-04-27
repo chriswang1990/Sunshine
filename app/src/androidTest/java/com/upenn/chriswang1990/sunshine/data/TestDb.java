@@ -14,10 +14,10 @@ package com.upenn.chriswang1990.sunshine.data;/*
  * limitations under the License.
  */
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
-
 import java.util.HashSet;
 
 public class TestDb extends AndroidTestCase {
@@ -111,16 +111,25 @@ public class TestDb extends AndroidTestCase {
     */
     public void testLocationTable() {
         // First step: Get reference to writable database
-
+        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
         // Create ContentValues of what you want to insert
         // (you can use the createNorthPoleLocationValues if you wish)
-
+        ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
         // Insert ContentValues into database and get a row ID back
-
+        long locationRowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
+        assertTrue(locationRowId != -1);
         // Query the database and receive a Cursor back
-
+        Cursor cursor = db.query(
+              WeatherContract.LocationEntry.TABLE_NAME,  //Table queried
+              null, //  all columns
+              null, //  Column for "where"
+              null, //  Values for "where"
+              null,
+              null,
+              null  //  sort order
+        );
         // Move the cursor to a valid database row
-
+        assertTrue( "Error: No records returned from location query", cursor.moveToFirst());
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
