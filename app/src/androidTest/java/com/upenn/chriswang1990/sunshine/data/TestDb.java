@@ -120,7 +120,7 @@ public class TestDb extends AndroidTestCase {
         long locationRowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
         assertTrue(locationRowId != -1);
         // Query the database and receive a Cursor back
-        Cursor cursor = db.query(
+        Cursor locationCursor = db.query(
               WeatherContract.LocationEntry.TABLE_NAME,  //Table queried
               null, //  all columns
               null, //  Column for "where"
@@ -130,14 +130,14 @@ public class TestDb extends AndroidTestCase {
               null  //  sort order
         );
         // Move the cursor to a valid database row
-        assertTrue( "Error: No records returned from location query", cursor.moveToFirst());
+        assertTrue( "Error: No records returned from location query", locationCursor.moveToFirst());
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
-        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", cursor, testValues);
-        assertFalse("Error: More than one record returned", cursor.moveToNext());
+        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed", locationCursor, testValues);
+        assertFalse("Error: More than one record returned", locationCursor.moveToNext());
         // Finally, close the cursor and database
-        cursor.close();
+        locationCursor.close();
         db.close();
     }
 
@@ -150,28 +150,39 @@ public class TestDb extends AndroidTestCase {
     public void testWeatherTable() {
         // First insert the location, and then use the locationRowId to insert
         // the weather. Make sure to cover as many failure cases as you can.
-
+        long locationRowId = TestUtilities.insertNorthPoleLocationValues(this.mContext);
         // Instead of rewriting all of the code we've already written in testLocationTable
         // we can move this code to insertLocation and then call insertLocation from both
         // tests. Why move it? We need the code to return the ID of the inserted location
         // and our testLocationTable can only return void because it's a test.
-
         // First step: Get reference to writable database
-
+        SQLiteDatabase db = new WeatherDbHelper(this.mContext).getWritableDatabase();
         // Create ContentValues of what you want to insert
         // (you can use the createWeatherValues TestUtilities function if you wish)
-
+        ContentValues testValues = TestUtilities.createWeatherValues(locationRowId);
         // Insert ContentValues into database and get a row ID back
-
+        long weatherRowId = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, testValues);
         // Query the database and receive a Cursor back
-
+        Cursor weatherCursor = db.query(
+              WeatherContract.WeatherEntry.TABLE_NAME,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+        );
         // Move the cursor to a valid database row
-
+        assertTrue( "Error: No Records returned from location query", weatherCursor.moveToFirst());
         // Validate data in resulting Cursor with the original ContentValues
         // (you can use the validateCurrentRecord function in TestUtilities to validate the
         // query if you like)
-
+        TestUtilities.validateCurrentRecord("Error: Weather query validation failed",
+              weatherCursor, testValues);
+        assertFalse( "Error: More than one records returned", weatherCursor.moveToNext());
         // Finally, close the cursor and database
+        weatherCursor.close();
+        db.close();
     }
 
 
