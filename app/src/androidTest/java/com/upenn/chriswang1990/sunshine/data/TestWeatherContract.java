@@ -28,9 +28,6 @@ public class TestWeatherContract extends AndroidTestCase {
     private static final String TEST_WEATHER_LOCATION = "/North Pole";
     private static final long TEST_WEATHER_DATE = 1419033600L;  // December 20th, 2014
 
-    /*
-        Students: Uncomment this out to test your weather location function.
-     */
     public void testBuildWeatherLocation() {
         Uri locationUri = WeatherContract.WeatherEntry.buildWeatherLocation(TEST_WEATHER_LOCATION);
         assertNotNull("Error: Null Uri returned.  You must fill-in buildWeatherLocation in " +
