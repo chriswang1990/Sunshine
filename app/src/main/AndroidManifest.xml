@@ -36,7 +36,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.upenn.chriswang1990.sunshine.MainActivity"/>
         </activity>
-
+        <provider
+            android:authorities="com.upenn.chriswang1990.sunshine"
+            android:name=".data.WeatherProvider"/>
 
     </application>
 
