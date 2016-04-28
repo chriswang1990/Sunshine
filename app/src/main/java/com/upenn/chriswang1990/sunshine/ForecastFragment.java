@@ -147,7 +147,7 @@ public class ForecastFragment extends Fragment {
 
                 Uri.Builder builder = new Uri.Builder();
                 builder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
-                      ("2.5").appendPath("forecast").appendPath("daily?");
+                      ("2.5").appendPath("forecast").appendPath("daily");
                 builder.appendQueryParameter(QUERY_PARAM, location[0]).appendQueryParameter
                       (UNITS_PARAM, units).appendQueryParameter(DAYS_PARAM, ((Integer) days)
                       .toString()).appendQueryParameter(APPID_PARAM, BuildConfig
@@ -179,6 +179,8 @@ public class ForecastFragment extends Fragment {
                     return null;
                 }
                 forecastJsonStr = buffer.toString();
+                Log.d(LOG_TAG, forecastJsonStr);
+                Log.d(LOG_TAG, url.toString());
 
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
@@ -253,9 +255,9 @@ public class ForecastFragment extends Fragment {
             // These are the names of the JSON objects that need to be extracted.
             final String OWM_LIST = "list";
             final String OWM_WEATHER = "weather";
-            final String OWM_TEMPERATURE = "main";
-            final String OWM_MAX = "temp_max";
-            final String OWM_MIN = "temp_min";
+            final String OWM_TEMPERATURE = "temp";
+            final String OWM_MAX = "max";
+            final String OWM_MIN = "min";
             final String OWM_DESCRIPTION = "main";
 
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
