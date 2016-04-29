@@ -54,12 +54,12 @@ public class WeatherProvider extends ContentProvider {
 
     //location.location_setting = ?
     private static final String sLocationSettingSelection =
-            WeatherContract.LocationEntry.TABLE_NAME+
+            WeatherContract.LocationEntry.TABLE_NAME +
                     "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? ";
 
     //location.location_setting = ? AND date >= ?
     private static final String sLocationSettingWithStartDateSelection =
-            WeatherContract.LocationEntry.TABLE_NAME+
+            WeatherContract.LocationEntry.TABLE_NAME +
                     "." + WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ? AND " +
                     WeatherContract.WeatherEntry.COLUMN_DATE + " >= ? ";
 
@@ -181,12 +181,28 @@ public class WeatherProvider extends ContentProvider {
             }
             // "weather"
             case WEATHER: {
-                retCursor = null;
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                      WeatherContract.WeatherEntry.TABLE_NAME,
+                      projection,
+                      selection,
+                      selectionArgs,
+                      null,
+                      null,
+                      sortOrder
+                );
                 break;
             }
             // "location"
             case LOCATION: {
-                retCursor = null;
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                      WeatherContract.LocationEntry.TABLE_NAME,
+                      projection,
+                      selection,
+                      selectionArgs,
+                      null,
+                      null,
+                      sortOrder
+                );
                 break;
             }
 
