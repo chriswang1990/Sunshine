@@ -6,9 +6,11 @@
     <string name="pref_location_label">Location</string>
     <string name="pref_location_key" translatable="false">location</string>
     <string name="pref_location_default" translatable="false">94043</string>
-    <string name="pref_unit_label">Unit Setting</string>
-    <string name="pref_unit_default">metric</string>
-    <string name="pref_unit_key">unit</string>
+    <string name="pref_units_label">Unit Setting</string>
+    <string name="pref_units_default">metric</string>
+    <string name="pref_units_key">unit</string>
     <string name="action_map">Map location</string>
     <string name="action_share_label">Share</string>
+    <string name="pref_units_metric">metric</string>
+    <string name="pref_units_imperial">imperial</string>
 </resources>

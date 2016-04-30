@@ -9,9 +9,9 @@
         android:singleLine="true"
         android:title="@string/pref_location_label"/>
     <ListPreference
-        android:defaultValue="@string/pref_unit_default"
-        android:title="@string/pref_unit_label"
-        android:key="@string/pref_unit_key"
-        android:entries="@array/pref_unit_entries"
-        android:entryValues="@array/pref_unit_values"/>
+        android:defaultValue="@string/pref_units_default"
+        android:title="@string/pref_units_label"
+        android:key="@string/pref_units_key"
+        android:entries="@array/pref_units_entries"
+        android:entryValues="@array/pref_units_values"/>
 </PreferenceScreen>

@@ -224,7 +224,7 @@ public class WeatherProvider extends ContentProvider {
 
         switch (match) {
             case WEATHER: {
-                normalizeDate(values);
+                //normalizeDate(values);
                 long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, values);
                 if ( _id > 0 ) {
                     returnUri = WeatherContract.WeatherEntry.buildWeatherUri(_id);
@@ -272,13 +272,13 @@ public class WeatherProvider extends ContentProvider {
         return rowsDeleted;
     }
 
-    private void normalizeDate(ContentValues values) {
-        // normalize the date value
-        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE)) {
-            long dateValue = values.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
-            values.put(WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.normalizeDate(dateValue));
-        }
-    }
+//    private void normalizeDate(ContentValues values) {
+//        // normalize the date value
+//        if (values.containsKey(WeatherContract.WeatherEntry.COLUMN_DATE)) {
+//            long dateValue = values.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
+//            values.put(WeatherContract.WeatherEntry.COLUMN_DATE, WeatherContract.normalizeDate(dateValue));
+//        }
+//    }
 
     @Override
     public int update(@NonNull
@@ -314,7 +314,7 @@ public class WeatherProvider extends ContentProvider {
                 int returnCount = 0;
                 try {
                     for (ContentValues value : values) {
-                        normalizeDate(value);
+                        //normalizeDate(value);
                         long _id = db.insert(WeatherContract.WeatherEntry.TABLE_NAME, null, value);
                         if (_id != -1) {
                             returnCount++;
