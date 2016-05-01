@@ -14,9 +14,11 @@ package com.upenn.chriswang1990.sunshine;/*
  * limitations under the License.
  */
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -109,7 +111,29 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         // Students: First, check if the location with this city name exists in the db
         // If it exists, return the current ID
         // Otherwise, insert it using the content resolver and the base URI
-        return -1;
+        long locationId;
+        Cursor locationCursor = mContext.getContentResolver().query(
+              WeatherContract.LocationEntry.CONTENT_URI,
+              new String[]{WeatherContract.LocationEntry._ID},
+              WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+              new String[]{locationSetting},
+              null);
+        if (locationCursor.moveToFirst()) {
+            int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry
+                  ._ID);
+            locationId = locationCursor.getLong(locationIdIndex);
+        } else {
+            ContentValues locationValues = new ContentValues();
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, locationSetting);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            Uri locationUri = mContext.getContentResolver().insert(WeatherContract.LocationEntry
+                  .CONTENT_URI, locationValues);
+            locationId = ContentUris.parseId(locationUri);
+        }
+        locationCursor.close();
+        return locationId;
     }
 
     /*
@@ -278,7 +302,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 //                } while (cur.moveToNext());
 //            }
 
-            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
+            //Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 
             String[] resultStrs = convertContentValuesToUXFormat(cVVector);
             return resultStrs;
