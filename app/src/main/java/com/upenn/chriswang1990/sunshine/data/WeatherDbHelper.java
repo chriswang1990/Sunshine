@@ -58,6 +58,7 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
                 // the ID of the location entry associated with this weather data
                 WeatherEntry.COLUMN_LOC_KEY + " INTEGER NOT NULL, " +
                 WeatherEntry.COLUMN_DATE + " INTEGER NOT NULL, " +
+                WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP + " INTEGER NOT NULL, " +
                 WeatherEntry.COLUMN_SHORT_DESC + " TEXT NOT NULL, " +
                 WeatherEntry.COLUMN_WEATHER_ID + " INTEGER NOT NULL," +
 

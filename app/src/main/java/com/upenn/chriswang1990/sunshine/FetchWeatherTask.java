@@ -19,6 +19,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
@@ -66,6 +67,12 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
         Date date = new Date(time * 1000);
         SimpleDateFormat readableFormat = new SimpleDateFormat("E, MMM d, yyyy", Locale.US);
         return readableFormat.format(date);
+    }
+
+    public static long normalizeDate (long time) {
+        Date date = new Date(time * 1000);
+        SimpleDateFormat normalizedFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+        return Long.parseLong(normalizedFormat.format(date));
     }
 
     /**
@@ -151,7 +158,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
                   weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP),
                   weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP));
             resultStrs[i] = getReadableDateString(
-                  weatherValues.getAsLong(WeatherEntry.COLUMN_DATE)) +
+                  weatherValues.getAsLong(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP)) +
                   "   -   " + weatherValues.getAsString(WeatherEntry.COLUMN_SHORT_DESC) +
                   "   -   " + highAndLow;
         }
@@ -230,6 +237,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
             for(int i = 0; i < weatherArray.length(); i++) {
                 // These are the values that will be collected.
                 long dateTime;
+                long unixTimestamp;
                 double pressure;
                 int humidity;
                 double windSpeed;
@@ -243,7 +251,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
                 // Get the JSON object representing the day
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
-                dateTime = dayForecast.getLong(OWM_DATE);
+                unixTimestamp = dayForecast.getLong(OWM_DATE);
+                dateTime = normalizeDate(unixTimestamp);
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
                 windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
@@ -266,6 +275,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
                 weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationId);
                 weatherValues.put(WeatherEntry.COLUMN_DATE, dateTime);
+                weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, unixTimestamp);
                 weatherValues.put(WeatherEntry.COLUMN_HUMIDITY, humidity);
                 weatherValues.put(WeatherEntry.COLUMN_PRESSURE, pressure);
                 weatherValues.put(WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
@@ -280,29 +290,30 @@ public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
 
             // add to database
             if ( cVVector.size() > 0 ) {
-                // Student: call bulkInsert to add the weatherEntries to the database here
+                ContentValues[] values = new ContentValues[cVVector.size()];
+                cVVector.toArray(values);
+                mContext.getContentResolver().bulkInsert(WeatherContract.WeatherEntry
+                      .CONTENT_URI, values);
             }
 
             // Sort order:  Ascending, by date.
             String sortOrder = WeatherEntry.COLUMN_DATE + " ASC";
             Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithStartDate(
-                  locationSetting, System.currentTimeMillis());
+                  locationSetting, normalizeDate(System.currentTimeMillis()/1000));
 
-            // Students: Uncomment the next lines to display what what you stored in the bulkInsert
+            Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
+                    null, null, null, sortOrder);
 
-//            Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
-//                    null, null, null, sortOrder);
-//
-//            cVVector = new Vector<ContentValues>(cur.getCount());
-//            if ( cur.moveToFirst() ) {
-//                do {
-//                    ContentValues cv = new ContentValues();
-//                    DatabaseUtils.cursorRowToContentValues(cur, cv);
-//                    cVVector.add(cv);
-//                } while (cur.moveToNext());
-//            }
+            cVVector = new Vector<>(cur.getCount());
+            if ( cur.moveToFirst() ) {
+                do {
+                    ContentValues cv = new ContentValues();
+                    DatabaseUtils.cursorRowToContentValues(cur, cv);
+                    cVVector.add(cv);
+                } while (cur.moveToNext());
+            }
 
-            //Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
+            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + cVVector.size() + " Inserted");
 
             String[] resultStrs = convertContentValuesToUXFormat(cVVector);
             return resultStrs;

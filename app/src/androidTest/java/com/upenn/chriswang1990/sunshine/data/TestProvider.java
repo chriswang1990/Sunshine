@@ -27,6 +27,7 @@ import android.os.Build;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
+import com.upenn.chriswang1990.sunshine.FetchWeatherTask;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract.LocationEntry;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract.WeatherEntry;
 
@@ -144,9 +145,9 @@ public class TestProvider extends AndroidTestCase {
             the correct type for each type of URI that it can handle.
          */
     public void testGetType() {
-        // content://com.example.android.sunshine.app/weather/
+        // content://com.upenn.chriswang1990.sunshine/weather/
         String type = mContext.getContentResolver().getType(WeatherEntry.CONTENT_URI);
-        // vnd.android.cursor.dir/com.example.android.sunshine.app/weather
+        // vnd.android.cursor.dir/com.upenn.chriswang1990.sunshine/weather
         assertEquals("Error: the WeatherEntry CONTENT_URI should return WeatherEntry.CONTENT_TYPE",
                 WeatherEntry.CONTENT_TYPE, type);
 
@@ -158,11 +159,10 @@ public class TestProvider extends AndroidTestCase {
         assertEquals("Error: the WeatherEntry CONTENT_URI with location should return WeatherEntry.CONTENT_TYPE",
                 WeatherEntry.CONTENT_TYPE, type);
 
-        long testDate = 1419120000L; // December 21st, 2014
+        long testDate = 20160501; // May 1st, 2016
         // content://com.example.android.sunshine.app/weather/94074/20140612
         type = mContext.getContentResolver().getType(
                 WeatherEntry.buildWeatherLocationWithDate(testLocation, testDate));
-        // vnd.android.cursor.item/com.example.android.sunshine.app/weather/1419120000
         assertEquals("Error: the WeatherEntry CONTENT_URI with location and date should return WeatherEntry.CONTENT_ITEM_TYPE",
                 WeatherEntry.CONTENT_ITEM_TYPE, type);
 
@@ -432,10 +432,12 @@ public class TestProvider extends AndroidTestCase {
         long millisecondsInADay = 1000*60*60*24;
         ContentValues[] returnContentValues = new ContentValues[BULK_INSERT_RECORDS_TO_INSERT];
 
-        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentTestDate+= millisecondsInADay ) {
+        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentTestDate +=
+              millisecondsInADay ) {
             ContentValues weatherValues = new ContentValues();
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, currentTestDate);
+            weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, currentTestDate);
+            weatherValues.put(WeatherEntry.COLUMN_DATE, FetchWeatherTask.normalizeDate(currentTestDate));
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2 + 0.01 * (float) i);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3 - 0.01 * (float) i);

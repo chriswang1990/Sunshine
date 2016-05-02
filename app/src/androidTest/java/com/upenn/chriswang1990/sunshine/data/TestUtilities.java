@@ -22,7 +22,8 @@ import java.util.Set;
  */
 public class TestUtilities extends AndroidTestCase {
     static final String TEST_LOCATION = "99705";
-    static final long TEST_DATE = 1419033600L;  // December 20th, 2014
+    static final long TEST_DATE = 20160501;  // May 1st, 2016
+    static final long TEST_UNIX_TIMESTAMP = 1462141753; //
 
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
         assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
@@ -50,6 +51,7 @@ public class TestUtilities extends AndroidTestCase {
         ContentValues weatherValues = new ContentValues();
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, TEST_DATE);
+        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, TEST_UNIX_TIMESTAMP);
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2);
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3);
@@ -58,7 +60,6 @@ public class TestUtilities extends AndroidTestCase {
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, "Asteroids");
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, 5.5);
         weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, 321);
-
         return weatherValues;
     }
 
