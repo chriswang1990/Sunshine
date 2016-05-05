@@ -1,5 +1,6 @@
 package com.upenn.chriswang1990.sunshine;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
@@ -92,26 +94,25 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView forecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
         forecastList.setAdapter(mForecastAdapter);
-//        forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//        /*
-//        //toast for testing
-//        Toast toast = Toast.makeText(getActivity().getApplicationContext(), (String)
-//            parent.getItemAtPosition(position), Toast.LENGTH_SHORT);
-//        toast.show();
-//        */
-//                String forecastStr = forecastAdapter.getItem(position);
-//                Intent detailIntent = new Intent(getActivity(), DetailActivity.class).putExtra
-//                      (Intent.EXTRA_TEXT, forecastStr);
-//                userPreferences = PreferenceManager.getDefaultSharedPreferences
-//                      (getActivity());
-//                SharedPreferences.Editor editor = userPreferences.edit();
-//                editor.putString("forecastStr", forecastStr);
-//                editor.apply();
-//                startActivity(detailIntent);
-//            }
-//        });
+        forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+        /*
+        //toast for testing
+        Toast toast = Toast.makeText(getActivity().getApplicationContext(), (String)
+            parent.getItemAtPosition(position), Toast.LENGTH_SHORT);
+        toast.show();
+        */
+                Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+                if (cursor != null) {
+                    String locationSetting = Utility.getPreferredLocation(getActivity());
+                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class).setData
+                          (WeatherContract.WeatherEntry.buildWeatherLocationWithDate
+                                (locationSetting, cursor.getLong(COL_WEATHER_DATE)));
+                    startActivity(detailIntent);
+                }
+            }
+        });
         return rootView;
     }
 

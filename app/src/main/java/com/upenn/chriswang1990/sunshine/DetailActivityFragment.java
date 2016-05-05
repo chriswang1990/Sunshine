@@ -13,6 +13,12 @@ import android.widget.TextView;
  */
 public class DetailActivityFragment extends Fragment {
 
+    String forecastStr;
+    private static final int DETAIL_LOADER = 0;
+
+    private static final String[] DETAIL_COLUMNS = {
+
+    };    
     public DetailActivityFragment() {
     }
 
@@ -20,10 +26,13 @@ public class DetailActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        TextView forecastTextView = (TextView) rootView.findViewById(R.id.textview_detail);
         Intent detailIntent = getActivity().getIntent();
-        String forecastStr = detailIntent.getStringExtra(Intent.EXTRA_TEXT);
-        forecastTextView.setText(forecastStr);
+        if (detailIntent != null) {
+            forecastStr = detailIntent.getDataString();
+        }
+        if (forecastStr != null) {
+            ((TextView) rootView.findViewById(R.id.textview_detail)).setText(forecastStr);
+        }
         return rootView;
     }
 }
