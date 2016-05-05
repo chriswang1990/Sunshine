@@ -26,6 +26,30 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 //    ArrayAdapter<String> forecastAdapter;
 //    SharedPreferences userPreferences;
     private static final int FORECAST_LOADER = 0;
+    private static final String[] FORECAST_COLUMNS = {
+          WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+          WeatherContract.WeatherEntry.COLUMN_DATE,
+          WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP,
+          WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+          WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+          WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+          WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+          WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+          WeatherContract.LocationEntry.COLUMN_COORD_LAT,
+          WeatherContract.LocationEntry.COLUMN_COORD_LONG
+    };
+
+    static final int COL_WEATHER_ID = 0;
+    static final int COL_WEATHER_DATE = 1;
+    static final int COL_WEATHER_DATE_UNIX = 2;
+    static final int COL_WEATHER_DESC = 3;
+    static final int COL_WEATHER_MAX_TEMP = 4;
+    static final int COL_WEATHER_MIN_TEMP = 5;
+    static final int COL_LOCATION_SETTING = 6;
+    static final int COL_WEATHER_CONDITION_ID = 7;
+    static final int COL_COORD_LAT = 8;
+    static final int COL_COORD_LONG = 9;
+
     private ForecastAdapter mForecastAdapter;
     public ForecastFragment() {
     }
@@ -61,16 +85,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 //        final ArrayList<String> forecastData = new ArrayList<>();
-        /*
-        //comment out the fake data
-        forecastData.add("Today - Sunny - 20/10");
-        forecastData.add("Tomorrow - Rainy - 15/9");
-        forecastData.add("Wednesday - Sunny - 22/10");
-        forecastData.add("Thursday - Cloudy - 15/8");
-        forecastData.add("Friday - Sunny - 23/13");
-        forecastData.add("Saturday - Sunny - 26/16");
-        forecastData.add("Sunny - Sunny - 25/15");
-        */
 //        forecastAdapter = new ArrayAdapter<>(getActivity(), R.layout
 //              .list_item_forecast, R.id.list_item_forecast_textview, forecastData);
 
@@ -112,7 +126,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System.currentTimeMillis()));
-        return new CursorLoader(getActivity(), weatherForLocationUri, null, null, null, sortOrder);
+        return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
     }
 
     @Override
