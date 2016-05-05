@@ -25,11 +25,6 @@ public class TestUtilities extends AndroidTestCase {
     static final long TEST_DATE = 20160501;  // May 1st, 2016
     static final long TEST_UNIX_TIMESTAMP = 1462141753; //
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
     static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
         assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
         validateCurrentRecord(error, valueCursor, expectedValues);

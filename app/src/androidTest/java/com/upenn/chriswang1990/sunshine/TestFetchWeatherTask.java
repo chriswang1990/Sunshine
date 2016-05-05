@@ -27,11 +27,6 @@ public class TestFetchWeatherTask extends AndroidTestCase{
     static final double ADD_LOCATION_LAT = 34.425833;
     static final double ADD_LOCATION_LON = -119.714167;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
     /*
             This test will only run on API level 11 and higher because of a requirement in the
             content provider.
