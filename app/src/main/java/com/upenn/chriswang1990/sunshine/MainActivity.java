@@ -12,10 +12,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
+
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private String mLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mLocation = Utility.getPreferredLocation(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -60,6 +64,21 @@ public class MainActivity extends AppCompatActivity {
             startActivity(mapIntent);
         } else {
             Log.d(LOG_TAG, "Couldn't call " + location + ", no receiving apps installed!");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String location = Utility.getPreferredLocation( this );
+        // update the location in our second pane using the fragment manager
+        if (location != null && !location.equals(mLocation)) {
+            ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
+                  (R.id.fragment_forecast);
+            if ( null != ff ) {
+                ff.onLocationChanged();
+            }
+            mLocation = location;
         }
     }
 }
