@@ -37,6 +37,11 @@ public class TestUriMatcher extends AndroidTestCase {
     // content://com.example.android.sunshine.app/location"
     private static final Uri TEST_LOCATION_DIR = WeatherContract.LocationEntry.CONTENT_URI;
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
     public void testUriMatcher() {
         UriMatcher testMatcher = WeatherProvider.buildUriMatcher();
 
