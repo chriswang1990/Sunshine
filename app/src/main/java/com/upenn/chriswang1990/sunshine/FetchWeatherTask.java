@@ -200,6 +200,51 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             double cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
+            //Get the timezone from google API
+            HttpURLConnection urlConnection;
+            BufferedReader reader;
+            String latAndLon = cityLatitude + "," + cityLongitude;
+            long timestamp = System.currentTimeMillis()/1000;
+            Uri.Builder timezoneAPIBuilder = new Uri.Builder();
+            timezoneAPIBuilder.scheme("https").authority("maps.googleapis.com").appendPath
+                  ("maps").appendPath
+                  ("api").appendPath("timezone").appendPath("json");
+            timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
+                  .appendQueryParameter("timestamp", Long.toString(timestamp))
+                  .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
+                  .build();
+            URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
+            Log.d(LOG_TAG, timezoneAPIUrl.toString());
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) timezoneAPIUrl.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream == null) {
+                // Nothing to do.
+
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                buffer.append(line + "\n");
+            }
+
+            if (buffer.length() == 0) {
+                // Stream was empty.  No point in parsing.
+            }
+
+            String timezoneInfoStr = buffer.toString();
+            JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
+            double rawOffset = timezoneInfo.getDouble("rawOffset");
+
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
@@ -270,35 +315,16 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             if ( cVVector.size() > 0 ) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
-//                mContext.getContentResolver().bulkInsert(WeatherContract.WeatherEntry
-//                      .CONTENT_URI, values);
-//            }
-//
-//            // Sort order:  Ascending, by date.
-////            String sortOrder = WeatherEntry.COLUMN_DATE + " ASC";
-////            Uri weatherForLocationUri = WeatherEntry.buildWeatherLocationWithStartDate(
-////                  locationSetting, Utility.normalizeDate(System.currentTimeMillis()));
-////
-////            Cursor cur = mContext.getContentResolver().query(weatherForLocationUri,
-////                    null, null, null, sortOrder);
-//
-//            cVVector = new Vector<>(cur.getCount());
-//            if ( cur.moveToFirst() ) {
-//                do {
-//                    ContentValues cv = new ContentValues();
-//                    DatabaseUtils.cursorRowToContentValues(cur, cv);
-//                    cVVector.add(cv);
-//                } while (cur.moveToNext());
                 inserted = mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
                       values);
             }
 
             Log.d(LOG_TAG, "FetchWeatherTask Complete. " + inserted + " Inserted");
 
-//            String[] resultStrs = convertContentValuesToUXFormat(cVVector);
-//            return resultStrs;
-
         } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } catch (IOException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
@@ -319,7 +345,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         BufferedReader reader = null;
 
         // Will contain the raw JSON response as a string.
-        String forecastJsonStr = null;
+        String forecastJsonStr;
 
         String format = "json";
         String units = "metric";
@@ -329,8 +355,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            Uri.Builder builder = new Uri.Builder();
-            builder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
+            Uri.Builder weatherAPIBuilder = new Uri.Builder();
+            weatherAPIBuilder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
                   ("2.5").appendPath("forecast").appendPath("daily");
             final String QUERY_PARAM = "q";
             final String FORMAT_PARAM = "mode";
@@ -338,17 +364,17 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
 
-            builder.appendQueryParameter(QUERY_PARAM, params[0])
+            weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, params[0])
                   .appendQueryParameter(FORMAT_PARAM, format)
                   .appendQueryParameter(UNITS_PARAM, units)
                   .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                   .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
                   .build();
 
-            URL url = new URL(builder.toString());
-            Log.d(LOG_TAG, url.toString());
+            URL weatherAPIUrl = new URL(weatherAPIBuilder.toString());
+            Log.d(LOG_TAG, weatherAPIUrl.toString());
             // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpURLConnection) weatherAPIUrl.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
@@ -366,7 +392,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
-                buffer.append(line + "\n");
+                line += "\n";
+                buffer.append(line);
             }
 
             if (buffer.length() == 0) {
@@ -375,6 +402,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             }
             forecastJsonStr = buffer.toString();
             getWeatherDataFromJson(forecastJsonStr, locationQuery);
+            //Call api for the timezone info
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
@@ -394,24 +422,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 }
             }
         }
-//        try {
-//            return getWeatherDataFromJson(forecastJsonStr, locationQuery);
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//        }
-//        // This will only happen if there was an error getting or parsing the forecast.
         return null;
     }
 
-//    @Override
-//    protected void onPostExecute(String[] result) {
-//        if (result != null && mForecastAdapter != null) {
-//            mForecastAdapter.clear();
-//            for(String dayForecastStr : result) {
-//                mForecastAdapter.add(dayForecastStr);
-//            }
-//            // New data is back from the server.  Hooray!
-//        }
-//    }
 }
