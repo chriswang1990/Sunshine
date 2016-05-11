@@ -201,50 +201,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
             //Get the timezone from google API
-            HttpURLConnection urlConnection;
-            BufferedReader reader;
-            String latAndLon = cityLatitude + "," + cityLongitude;
-            long timestamp = System.currentTimeMillis()/1000;
-            Uri.Builder timezoneAPIBuilder = new Uri.Builder();
-            timezoneAPIBuilder.scheme("https").authority("maps.googleapis.com").appendPath
-                  ("maps").appendPath
-                  ("api").appendPath("timezone").appendPath("json");
-            timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
-                  .appendQueryParameter("timestamp", Long.toString(timestamp))
-                  .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
-                  .build();
-            URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
-            Log.d(LOG_TAG, timezoneAPIUrl.toString());
-            // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) timezoneAPIUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-            }
-
-            String timezoneInfoStr = buffer.toString();
-            JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
-            double rawOffset = timezoneInfo.getDouble("rawOffset");
-
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
 
             // Insert the new weather information into the database
@@ -260,6 +216,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // These are the values that will be collected.
                 long dateTime;
                 long unixTimestamp;
+                long timeOffset;
                 double pressure;
                 int humidity;
                 double windSpeed;
@@ -274,6 +231,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // Get the JSON object representing the day
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
                 unixTimestamp = dayForecast.getLong(OWM_DATE) * 1000; //convert to milliseconds
+                timeOffset = getTimeOffset(cityLatitude, cityLongitude, unixTimestamp);
+                unixTimestamp += timeOffset * 1000; //applied the time offset from google api to
+                // the unix time(in milliseconds);
                 dateTime = Utility.normalizeDate(unixTimestamp);
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
@@ -322,9 +282,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             Log.d(LOG_TAG, "FetchWeatherTask Complete. " + inserted + " Inserted");
 
         } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        } catch (IOException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
@@ -425,4 +382,63 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         return null;
     }
 
+    private long getTimeOffset(double cityLatitude, double cityLongitude, long timestamp) {
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+        long timeOffset = 0;
+        try {
+            String latAndLon = cityLatitude + "," + cityLongitude;
+            Uri.Builder timezoneAPIBuilder = new Uri.Builder();
+            timezoneAPIBuilder.scheme("https").authority("maps.googleapis.com").appendPath
+                  ("maps").appendPath
+                  ("api").appendPath("timezone").appendPath("json");
+            timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
+                  .appendQueryParameter("timestamp", Long.toString(timestamp/1000))
+                  .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
+                  .build();
+            URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) timezoneAPIUrl.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuffer buffer = new StringBuffer();
+            if (inputStream != null) {
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    line += "\n";
+                    buffer.append(line);
+                }
+                String timezoneInfoStr = buffer.toString();
+                JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
+                long rawOffset = timezoneInfo.getLong("rawOffset");
+                long dstOffset = timezoneInfo.getLong("dstOffset");
+                timeOffset = rawOffset + dstOffset;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+        }
+        return timeOffset;
+    }
 }
