@@ -83,6 +83,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID, timezoneID);
             Uri locationUri = mContext.getContentResolver().insert(WeatherContract.LocationEntry
                   .CONTENT_URI, locationValues);
             locationId = ContentUris.parseId(locationUri);
@@ -96,22 +97,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         the UX expects so that we can continue to test the application even once we begin using
         the database.
      */
-//    String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
-//        // return strings to keep UI functional for now
-//        //Log.d("Check Date", cvv.elementAt(1).getAsString(WeatherEntry.COLUMN_DATE));
-//        String[] resultStrs = new String[cvv.size()];
-//        for ( int i = 0; i < cvv.size(); i++ ) {
-//            ContentValues weatherValues = cvv.elementAt(i);
-//            String highAndLow = formatHighLows(
-//                  weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP),
-//                  weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP));
-//            resultStrs[i] = getReadableDateString(
-//                  weatherValues.getAsLong(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP)) +
-//                  "   -   " + weatherValues.getAsString(WeatherEntry.COLUMN_SHORT_DESC) +
-//                  "   -   " + highAndLow;
-//        }
-//        return resultStrs;
-//    }
 
     /**
      * Take the String representing the complete forecast in JSON Format and
