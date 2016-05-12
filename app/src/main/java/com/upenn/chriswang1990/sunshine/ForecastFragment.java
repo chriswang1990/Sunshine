@@ -38,7 +38,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
           WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
           WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
           WeatherContract.LocationEntry.COLUMN_COORD_LAT,
-          WeatherContract.LocationEntry.COLUMN_COORD_LONG
+          WeatherContract.LocationEntry.COLUMN_COORD_LONG,
+          WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -51,6 +52,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_WEATHER_CONDITION_ID = 7;
     static final int COL_COORD_LAT = 8;
     static final int COL_COORD_LONG = 9;
+    static final int COL_TIMEZONE_ID = 10;
 
     private ForecastAdapter mForecastAdapter;
     public ForecastFragment() {
@@ -120,7 +122,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System.currentTimeMillis()));
+        String timezoneID = "";
+        Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
+              .buildWeatherLocation(locationSetting),
+              new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
+        if (location.moveToFirst()) {
+            timezoneID = location.getString(0);
+        }
+        location.close();
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry
+              .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
+                    .currentTimeMillis(), timezoneID));
         return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
     }
 

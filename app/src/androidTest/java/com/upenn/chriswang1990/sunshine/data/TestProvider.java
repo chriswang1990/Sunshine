@@ -434,7 +434,8 @@ public class TestProvider extends AndroidTestCase {
             ContentValues weatherValues = new ContentValues();
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
             weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, currentTestDate);
-            weatherValues.put(WeatherEntry.COLUMN_DATE, Utility.normalizeDate(currentTestDate));
+            weatherValues.put(WeatherEntry.COLUMN_DATE, Utility.normalizeDate(currentTestDate,
+                  "America/Chicago"));
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2 + 0.01 * (float) i);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3 - 0.01 * (float) i);

@@ -188,7 +188,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
                 unixTimestamp = dayForecast.getLong(OWM_DATE) * 1000; //convert to milliseconds
                 // the unix time(in milliseconds);
-                dateTime = Utility.normalizeDate(unixTimestamp);
+                dateTime = Utility.normalizeDate(unixTimestamp, timezoneID);
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
                 windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
@@ -223,18 +223,13 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
                 cVVector.add(weatherValues);
             }
-
-            int inserted = 0;
             // add to database
             if ( cVVector.size() > 0 ) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
-                inserted = mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
+                mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
                       values);
             }
-
-            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + inserted + " Inserted");
-
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -391,7 +386,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 }
             }
         }
-        Log.d("Timezone testing", timezoneID);
         return timezoneID;
     }
 }
