@@ -52,37 +52,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
      * so for convenience we're breaking it out into its own method now.
      */
 
-//
-//    /**
-//     * Prepare the weather high/lows for presentation.
-//     */
-//    private String formatHighLows(double high, double low) {
-//        // Data is fetched in Celsius by default.
-//        // If user prefers to see in Fahrenheit, convert the values here.
-//        // We do this rather than fetching in Fahrenheit so that the user can
-//        // change this option without us having to re-fetch the data once
-//        // we start storing the values in a database.
-//        SharedPreferences sharedPrefs =
-//              PreferenceManager.getDefaultSharedPreferences(mContext);
-//        String unitType = sharedPrefs.getString(
-//              mContext.getString(R.string.pref_units_key),
-//              mContext.getString(R.string.pref_units_metric));
-//
-//        if (unitType.equals(mContext.getString(R.string.pref_units_imperial))) {
-//            high = (high * 1.8) + 32;
-//            low = (low * 1.8) + 32;
-//        } else if (!unitType.equals(mContext.getString(R.string.pref_units_metric))) {
-//            Log.d(LOG_TAG, "Unit type not found: " + unitType);
-//        }
-//
-//        // For presentation, assume the user doesn't care about tenths of a degree.
-//        long roundedHigh = Math.round(high);
-//        long roundedLow = Math.round(low);
-//
-//        String highLowStr = roundedHigh + "/" + roundedLow;
-//        return highLowStr;
-//    }
-
     /**
      * Helper method to handle insertion of a new location in the weather database.
      *
@@ -92,7 +61,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
      * @param lon the longitude of the city
      * @return the row ID of the added location.
      */
-    long addLocation(String locationSetting, String cityName, double lat, double lon) {
+    long addLocation(String locationSetting, String cityName, double lat, double lon, String
+          timezoneID) {
         // Students: First, check if the location with this city name exists in the db
         // If it exists, return the current ID
         // Otherwise, insert it using the content resolver and the base URI
@@ -113,6 +83,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, cityName);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
+            locationValues.put(WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID, timezoneID);
             Uri locationUri = mContext.getContentResolver().insert(WeatherContract.LocationEntry
                   .CONTENT_URI, locationValues);
             locationId = ContentUris.parseId(locationUri);
@@ -126,22 +97,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         the UX expects so that we can continue to test the application even once we begin using
         the database.
      */
-//    String[] convertContentValuesToUXFormat(Vector<ContentValues> cvv) {
-//        // return strings to keep UI functional for now
-//        //Log.d("Check Date", cvv.elementAt(1).getAsString(WeatherEntry.COLUMN_DATE));
-//        String[] resultStrs = new String[cvv.size()];
-//        for ( int i = 0; i < cvv.size(); i++ ) {
-//            ContentValues weatherValues = cvv.elementAt(i);
-//            String highAndLow = formatHighLows(
-//                  weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP),
-//                  weatherValues.getAsDouble(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP));
-//            resultStrs[i] = getReadableDateString(
-//                  weatherValues.getAsLong(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP)) +
-//                  "   -   " + weatherValues.getAsString(WeatherEntry.COLUMN_SHORT_DESC) +
-//                  "   -   " + highAndLow;
-//        }
-//        return resultStrs;
-//    }
 
     /**
      * Take the String representing the complete forecast in JSON Format and
@@ -201,7 +156,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
             //Get the timezone from google API
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude);
+            String timezoneID = getTimezonID(cityLatitude, cityLongitude);
+            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude,
+                  timezoneID);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
@@ -216,7 +173,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // These are the values that will be collected.
                 long dateTime;
                 long unixTimestamp;
-                long timeOffset;
                 double pressure;
                 int humidity;
                 double windSpeed;
@@ -231,10 +187,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // Get the JSON object representing the day
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
                 unixTimestamp = dayForecast.getLong(OWM_DATE) * 1000; //convert to milliseconds
-                timeOffset = getTimeOffset(cityLatitude, cityLongitude, unixTimestamp);
-                unixTimestamp += timeOffset * 1000; //applied the time offset from google api to
                 // the unix time(in milliseconds);
-                dateTime = Utility.normalizeDate(unixTimestamp);
+                dateTime = Utility.normalizeDate(unixTimestamp, timezoneID);
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
                 humidity = dayForecast.getInt(OWM_HUMIDITY);
                 windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
@@ -269,18 +223,13 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
                 cVVector.add(weatherValues);
             }
-
-            int inserted = 0;
             // add to database
             if ( cVVector.size() > 0 ) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
-                inserted = mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
+                mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
                       values);
             }
-
-            Log.d(LOG_TAG, "FetchWeatherTask Complete. " + inserted + " Inserted");
-
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
@@ -337,7 +286,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder stringBuilder = new StringBuilder();
             if (inputStream == null) {
                 // Nothing to do.
                 return null;
@@ -350,14 +299,14 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
                 line += "\n";
-                buffer.append(line);
+                stringBuilder.append(line);
             }
 
-            if (buffer.length() == 0) {
+            if (stringBuilder.length() == 0) {
                 // Stream was empty.  No point in parsing.
                 return null;
             }
-            forecastJsonStr = buffer.toString();
+            forecastJsonStr = stringBuilder.toString();
             getWeatherDataFromJson(forecastJsonStr, locationQuery);
             //Call api for the timezone info
         } catch (IOException e) {
@@ -382,10 +331,10 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         return null;
     }
 
-    private long getTimeOffset(double cityLatitude, double cityLongitude, long timestamp) {
+    private String getTimezonID(double cityLatitude, double cityLongitude) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        long timeOffset = 0;
+        String timezoneID = "null";
         try {
             String latAndLon = cityLatitude + "," + cityLongitude;
             Uri.Builder timezoneAPIBuilder = new Uri.Builder();
@@ -393,7 +342,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                   ("maps").appendPath
                   ("api").appendPath("timezone").appendPath("json");
             timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
-                  .appendQueryParameter("timestamp", Long.toString(timestamp/1000))
+                  .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis()/1000))
                   .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
                   .build();
             URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
@@ -403,22 +352,20 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             urlConnection.connect();
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder stringBuilder = new StringBuilder();
             if (inputStream != null) {
                 reader = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                     // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
+                    // stringBuilder for debugging.
                     line += "\n";
-                    buffer.append(line);
+                    stringBuilder.append(line);
                 }
-                String timezoneInfoStr = buffer.toString();
+                String timezoneInfoStr = stringBuilder.toString();
                 JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
-                long rawOffset = timezoneInfo.getLong("rawOffset");
-                long dstOffset = timezoneInfo.getLong("dstOffset");
-                timeOffset = rawOffset + dstOffset;
+                timezoneID = timezoneInfo.getString("timeZoneId");
             }
         } catch (IOException e) {
             Log.e(LOG_TAG, "Error ", e);
@@ -439,6 +386,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 }
             }
         }
-        return timeOffset;
+        return timezoneID;
     }
 }

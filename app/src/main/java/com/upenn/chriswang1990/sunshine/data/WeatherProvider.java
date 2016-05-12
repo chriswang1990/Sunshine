@@ -75,7 +75,6 @@ public class WeatherProvider extends ContentProvider {
 
         String[] selectionArgs;
         String selection;
-
         if (startDate == 0) {
             selection = sLocationSettingSelection;
             selectionArgs = new String[]{locationSetting};

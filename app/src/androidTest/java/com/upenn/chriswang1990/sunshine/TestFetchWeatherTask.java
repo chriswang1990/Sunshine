@@ -26,6 +26,7 @@ public class TestFetchWeatherTask extends AndroidTestCase{
     static final String ADD_LOCATION_CITY = "Sunnydale";
     static final double ADD_LOCATION_LAT = 34.425833;
     static final double ADD_LOCATION_LON = -119.714167;
+    static final String ADD_LOCATION_TIMEZONE = "America/Los_Angeles";
 
     /*
             This test will only run on API level 11 and higher because of a requirement in the
@@ -40,7 +41,7 @@ public class TestFetchWeatherTask extends AndroidTestCase{
 
         FetchWeatherTask fwt = new FetchWeatherTask(getContext());
         long locationId = fwt.addLocation(ADD_LOCATION_SETTING, ADD_LOCATION_CITY,
-                ADD_LOCATION_LAT, ADD_LOCATION_LON);
+                ADD_LOCATION_LAT, ADD_LOCATION_LON, ADD_LOCATION_TIMEZONE);
 
         // does addLocation return a valid record ID?
         assertFalse("Error: addLocation returned an invalid ID on insert",
@@ -85,7 +86,7 @@ public class TestFetchWeatherTask extends AndroidTestCase{
 
             // add the location again
             long newLocationId = fwt.addLocation(ADD_LOCATION_SETTING, ADD_LOCATION_CITY,
-                    ADD_LOCATION_LAT, ADD_LOCATION_LON);
+                    ADD_LOCATION_LAT, ADD_LOCATION_LON, ADD_LOCATION_TIMEZONE);
 
             assertEquals("Error: inserting a location again should return the same ID",
                     locationId, newLocationId);

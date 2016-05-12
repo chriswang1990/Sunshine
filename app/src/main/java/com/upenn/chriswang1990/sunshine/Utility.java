@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class Utility {
     public static String getPreferredLocation(Context context) {
@@ -30,9 +31,10 @@ public class Utility {
         return readableFormat.format(date);
     }
 
-    public static long normalizeDate (long time) {
+    public static long normalizeDate (long time, String timezoneID) {
         Date date = new Date(time);
         SimpleDateFormat normalizedFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+        normalizedFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
         return Long.parseLong(normalizedFormat.format(date));
     }
 
@@ -43,7 +45,7 @@ public class Utility {
         } else {
             temp = temperature;
         }
-        return String.format("%.0f", temp);
+        return String.format(Locale.US, "%.0f", temp);
     }
 
 }
