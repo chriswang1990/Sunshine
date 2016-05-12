@@ -133,7 +133,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager
         forecastStr = String.format("%s  -  %s  -  %s/%s", dateString, weatherDescription, high,
               low);
 
-        TextView detailTextView = (TextView)getView().findViewById(R.id.textview_detail);
+        TextView detailTextView = (TextView)getView().findViewById(R.id.detail_textview);
         detailTextView.setText(forecastStr);
 
         // If onCreateOptionsMenu has already happened, we need to update the share intent now.

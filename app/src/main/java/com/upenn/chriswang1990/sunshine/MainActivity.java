@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
             ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
-                  (R.id.fragment_forecast);
+                  (R.id.forecast_fragment);
             if ( null != ff ) {
                 ff.onLocationChanged();
             }
