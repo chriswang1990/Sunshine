@@ -291,7 +291,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder stringBuilder = new StringBuilder();
             if (inputStream == null) {
                 // Nothing to do.
                 return null;
@@ -304,14 +304,14 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // But it does make debugging a *lot* easier if you print out the completed
                 // buffer for debugging.
                 line += "\n";
-                buffer.append(line);
+                stringBuilder.append(line);
             }
 
-            if (buffer.length() == 0) {
+            if (stringBuilder.length() == 0) {
                 // Stream was empty.  No point in parsing.
                 return null;
             }
-            forecastJsonStr = buffer.toString();
+            forecastJsonStr = stringBuilder.toString();
             getWeatherDataFromJson(forecastJsonStr, locationQuery);
             //Call api for the timezone info
         } catch (IOException e) {
@@ -357,18 +357,18 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             urlConnection.connect();
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder stringBuilder = new StringBuilder();
             if (inputStream != null) {
                 reader = new BufferedReader(new InputStreamReader(inputStream));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
                     // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
+                    // stringBuilder for debugging.
                     line += "\n";
-                    buffer.append(line);
+                    stringBuilder.append(line);
                 }
-                String timezoneInfoStr = buffer.toString();
+                String timezoneInfoStr = stringBuilder.toString();
                 JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
                 timezoneID = timezoneInfo.getString("timeZoneId");
             }
