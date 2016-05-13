@@ -425,17 +425,15 @@ public class TestProvider extends AndroidTestCase {
 
     static private final int BULK_INSERT_RECORDS_TO_INSERT = 10;
     static ContentValues[] createBulkInsertWeatherValues(long locationRowId) {
-        long currentTestDate = TestUtilities.TEST_DATE;
-        long millisecondsInADay = 1000*60*60*24;
+        long currentUnixTimestamp = TestUtilities.TEST_UNIX_TIMESTAMP;
+        long secondsInADay = 60*60*24;
         ContentValues[] returnContentValues = new ContentValues[BULK_INSERT_RECORDS_TO_INSERT];
 
-        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentTestDate +=
-              millisecondsInADay ) {
+        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentUnixTimestamp += secondsInADay) {
             ContentValues weatherValues = new ContentValues();
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-            weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, currentTestDate);
-            weatherValues.put(WeatherEntry.COLUMN_DATE, Utility.normalizeDate(currentTestDate,
-                  "America/Chicago"));
+            weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, currentUnixTimestamp);
+            weatherValues.put(WeatherEntry.COLUMN_DATE, Utility.normalizeDate(currentUnixTimestamp, "America/Chicago"));
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2 + 0.01 * (float) i);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3 - 0.01 * (float) i);
@@ -505,14 +503,17 @@ public class TestProvider extends AndroidTestCase {
         );
 
         // we should have as many records in the database as we've inserted
-        assertEquals(cursor.getCount(), BULK_INSERT_RECORDS_TO_INSERT);
+        assertEquals(BULK_INSERT_RECORDS_TO_INSERT, cursor.getCount());
 
         // and let's make sure they match the ones we created
         cursor.moveToFirst();
+        assertEquals(TestUtilities.TEST_DATE, cursor.getLong(2));
         for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, cursor.moveToNext() ) {
             TestUtilities.validateCurrentRecord("testBulkInsert.  Error validating WeatherEntry " + i,
                     cursor, bulkInsertContentValues[i]);
         }
+        cursor.moveToLast();
+        assertEquals(TestUtilities.TEST_DATE + 9, cursor.getLong(2));
         cursor.close();
     }
 }

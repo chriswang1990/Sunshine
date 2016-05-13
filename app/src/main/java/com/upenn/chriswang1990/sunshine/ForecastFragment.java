@@ -132,7 +132,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         location.close();
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
               .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
-                    .currentTimeMillis(), timezoneID));
+                    .currentTimeMillis() / 1000, timezoneID));
         return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
     }
 

@@ -39,7 +39,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager
           WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP,
           WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
           WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-          WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+          WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -117,7 +117,7 @@ public class DetailActivityFragment extends Fragment implements LoaderManager
         if (!data.moveToFirst()) { return; }
 
         String dateString = Utility.getReadableDateString(
-              data.getLong(COL_WEATHER_DATE_UNIX));
+              data.getLong(COL_WEATHER_DATE_UNIX), "");
 
         String weatherDescription =
               data.getString(COL_WEATHER_DESC);

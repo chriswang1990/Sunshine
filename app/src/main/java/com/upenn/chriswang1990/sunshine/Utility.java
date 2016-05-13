@@ -23,16 +23,19 @@ public class Utility {
               .equals(context.getString(R.string.pref_units_metric));
     }
 
-    static String getReadableDateString(long time){
+    static String getReadableDateString(long unixTimestamp, String timezoneID){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
-        Date date = new Date(time);
+        long timeInMilliseconds = unixTimestamp * 1000;
+        Date date = new Date(timeInMilliseconds);
         SimpleDateFormat readableFormat = new SimpleDateFormat("E, MMM d", Locale.US);
+        readableFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
         return readableFormat.format(date);
     }
 
-    public static long normalizeDate (long time, String timezoneID) {
-        Date date = new Date(time);
+    public static long normalizeDate (long unixTimestamp, String timezoneID) {
+        long timeInMilliseconds = unixTimestamp * 1000;
+        Date date = new Date(timeInMilliseconds);
         SimpleDateFormat normalizedFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
         normalizedFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
         return Long.parseLong(normalizedFormat.format(date));

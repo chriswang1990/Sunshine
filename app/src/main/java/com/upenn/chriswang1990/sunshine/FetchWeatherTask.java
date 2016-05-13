@@ -186,7 +186,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
                 // Get the JSON object representing the day
                 JSONObject dayForecast = weatherArray.getJSONObject(i);
-                unixTimestamp = dayForecast.getLong(OWM_DATE) * 1000; //convert to milliseconds
+                unixTimestamp = dayForecast.getLong(OWM_DATE);
                 // the unix time(in milliseconds);
                 dateTime = Utility.normalizeDate(unixTimestamp, timezoneID);
                 pressure = dayForecast.getDouble(OWM_PRESSURE);
