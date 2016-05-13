@@ -36,12 +36,14 @@ public class Utility {
         Date date = new Date(timeInMilliseconds);
         SimpleDateFormat readableFormat = new SimpleDateFormat("E, MMM d", Locale.US);
         readableFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
-
+        //use a simple date format in the local timezone
         SimpleDateFormat compareFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+        compareFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
 
         try {
             String dateStr = Long.toString(normalizeDate(unixTimestamp, timezoneID));
             String todayStr = Long.toString(normalizeDate(System.currentTimeMillis() / 1000, timezoneID));
+
             //Log.d("date debug", "getReadableDateString: " + todayStr + " " + dateStr + " " + timezoneID);
             date = compareFormat.parse(dateStr);
             todayDate = compareFormat.parse(todayStr);
