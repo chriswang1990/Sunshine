@@ -9,7 +9,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -134,7 +133,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
               .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                     .currentTimeMillis() / 1000, timezoneID));
-        Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
+        //Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
         return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
     }
 
