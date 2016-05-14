@@ -31,10 +31,23 @@ public class ForecastAdapter extends CursorAdapter {
     public int getViewTypeCount() {
         return 2;
     }
-    
-    /*
-        Remember that these views are reused as needed.
-     */
+
+    public static class ViewHolder {
+        public final ImageView iconView;
+        public final TextView dateView;
+        public final TextView descriptionView;
+        public final TextView highTempView;
+        public final TextView lowTempView;
+
+        public ViewHolder(View view) {
+            iconView = (ImageView) view.findViewById(R.id.list_item_icon);
+            dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
+            descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
+            highTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
+            lowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
+        }
+    }
+
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
         int viewType = getItemViewType(cursor.getPosition());
@@ -65,10 +78,10 @@ public class ForecastAdapter extends CursorAdapter {
         ImageView iconView = (ImageView) view.findViewById(R.id.list_item_icon);
         iconView.setImageResource(R.mipmap.ic_launcher);
 
-        long unixdate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
+        long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
         String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
         TextView dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
-        dateView.setText(Utility.getReadableDateString(unixdate, timezoneID));
+        dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
         String description = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
         TextView descView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
