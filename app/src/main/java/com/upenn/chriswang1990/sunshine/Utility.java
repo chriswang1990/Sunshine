@@ -53,7 +53,7 @@ public class Utility {
                 String today = "Today";
                 SimpleDateFormat todayFormat = new SimpleDateFormat("MMM d", Locale.US);
                 todayFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
-                return today + " " + todayFormat.format(date);
+                return today + ", " + todayFormat.format(date);
             }
 
             if (dayDiff == 1) {
@@ -80,14 +80,14 @@ public class Utility {
         return Long.parseLong(normalizedFormat.format(date));
     }
 
-    static String formatTemperature(double temperature, boolean isMetric) {
+    static String formatTemperature(Context context, double temperature, boolean isMetric) {
         double temp;
         if ( !isMetric ) {
             temp = 9*temperature/5+32;
         } else {
             temp = temperature;
         }
-        return String.format(Locale.US, "%.0f", temp);
+        return context.getString(R.string.format_temperature, temp);
     }
 
 }
