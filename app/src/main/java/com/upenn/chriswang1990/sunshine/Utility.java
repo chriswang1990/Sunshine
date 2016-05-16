@@ -12,6 +12,8 @@ import java.util.TimeZone;
 
 public class Utility {
     public static final String DATE_FORMAT = "yyyyMMdd";
+    public static final String WEEK_FORMAT = "EEEE";
+    public static final String MONTH_DAY_FORMAT = "MMM d";
     public static final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
 
     public static String getPreferredLocation(Context context) {
@@ -51,9 +53,7 @@ public class Utility {
             //return "today" in readable string for today
             if (dayDiff == 0) {
                 String today = "Today";
-                SimpleDateFormat todayFormat = new SimpleDateFormat("MMM d", Locale.US);
-                todayFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
-                return today + ", " + todayFormat.format(date);
+                return today + ", " + getMonthDayFormat(unixTimestamp, timezoneID);
             }
 
             if (dayDiff == 1) {
@@ -61,15 +61,29 @@ public class Utility {
             }
 
             if (dayDiff > 1 && dayDiff < 7) {
-                SimpleDateFormat weekFormat = new SimpleDateFormat("EEEE", Locale.US);
-                weekFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
-                return weekFormat.format(date);
+                return getWeekTimeFormat(unixTimestamp, timezoneID);
             }
 
         } catch (ParseException e) {
             return readableFormat.format(date);
         }
         return readableFormat.format(date);
+    }
+
+    public static String getWeekTimeFormat (long unixTimestamp, String timezoneID) {
+        long timeInMilliseconds = unixTimestamp * 1000;
+        Date date = new Date(timeInMilliseconds);
+        SimpleDateFormat dayTimeFormat = new SimpleDateFormat(WEEK_FORMAT, Locale.US);
+        dayTimeFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
+        return dayTimeFormat.format(date);
+    }
+
+    public static String getMonthDayFormat (long unixTimestamp, String timezoneID) {
+        long timeInMilliseconds = unixTimestamp * 1000;
+        Date date = new Date(timeInMilliseconds);
+        SimpleDateFormat dayTimeFormat = new SimpleDateFormat(MONTH_DAY_FORMAT, Locale.US);
+        dayTimeFormat.setTimeZone(TimeZone.getTimeZone(timezoneID));
+        return dayTimeFormat.format(date);
     }
 
     public static long normalizeDate (long unixTimestamp, String timezoneID) {

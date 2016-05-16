@@ -6,27 +6,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingRight="16dp">
+        android:paddingRight="16dp"
+        android:paddingEnd="16dp"
+        android:paddingLeft="0dp"
+        android:paddingStart="0dp"
+        android:baselineAligned="false">
 
         <!-- Header: Day, Date -->
         <TextView
             android:id="@+id/detail_day_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tomorrow"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/detail_date_textview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="May 16"/>
+            android:layout_height="wrap_content" />
 
         <!-- Main content: high, low, art, weather state -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -37,14 +40,12 @@
                 <TextView
                     android:id="@+id/detail_high_textview"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="21\u00B0"/>
+                    android:layout_height="wrap_content" />
                 
                 <TextView
                     android:id="@+id/detail_low_textview"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="11\u00B0"/>
+                    android:layout_height="wrap_content" />
                 
             </LinearLayout>
             
@@ -53,19 +54,20 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:baselineAligned="false">
 
                 <ImageView
                     android:id="@+id/detail_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@mipmap/ic_launcher"/>
+                    android:src="@mipmap/ic_launcher"
+                    android:baselineAligned="false"/>
 
                 <TextView
                     android:id="@+id/detail_forecast_textview"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Clear"/>
+                    android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
 
@@ -73,19 +75,16 @@
         <TextView
             android:id="@+id/detail_humidity_textview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="48%"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/detail_wind_textview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="6 km/h NW"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/detail_pressure_textview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="1014"/>
+            android:layout_height="wrap_content" />
     </LinearLayout>
 </ScrollView>
