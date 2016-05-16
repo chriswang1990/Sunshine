@@ -16,7 +16,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
@@ -138,8 +137,8 @@ public class DetailActivityFragment extends Fragment implements LoaderManager
         forecastStr = String.format("%s  -  %s  -  %s/%s", dateString, weatherDescription, high,
                 low);
 
-        TextView detailTextView = (TextView) getView().findViewById(R.id.detail_textview);
-        detailTextView.setText(forecastStr);
+//        TextView detailTextView = (TextView) getView().findViewById(R.id.detail_textview);
+//        detailTextView.setText(forecastStr);
 
         // If onCreateOptionsMenu has already happened, we need to update the share intent now.
         if (shareActionProvider != null) {
