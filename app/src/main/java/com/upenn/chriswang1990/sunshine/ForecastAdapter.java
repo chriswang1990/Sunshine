@@ -80,9 +80,18 @@ public class ForecastAdapter extends CursorAdapter {
         // we'll keep the UI functional with a simple (and slow!) binding.
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
+        int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
 
         // Use placeholder image for now
-        viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+        int viewType = getItemViewType(cursor.getPosition());
+        if (viewType == VIEW_TYPE_TODAY) {
+            viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+        } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
+            viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherID));
+        } else {
+            viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+        }
+
 
         long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
         String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
