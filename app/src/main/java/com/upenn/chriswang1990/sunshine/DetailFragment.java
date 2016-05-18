@@ -128,7 +128,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Log.v(LOG_TAG, "In onCreateLoader");
         Intent detailIntent = getActivity().getIntent();
-        if (detailIntent == null) {
+        if (detailIntent == null || detailIntent.getData() == null) {
             return null;
         }
 
