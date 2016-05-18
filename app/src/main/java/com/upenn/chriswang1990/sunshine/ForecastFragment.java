@@ -1,6 +1,5 @@
 package com.upenn.chriswang1990.sunshine;
 
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,21 +24,21 @@ import com.upenn.chriswang1990.sunshine.data.WeatherContract;
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-//    ArrayAdapter<String> forecastAdapter;
+    //    ArrayAdapter<String> forecastAdapter;
 //    SharedPreferences userPreferences;
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
-          WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
-          WeatherContract.WeatherEntry.COLUMN_DATE,
-          WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP,
-          WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
-          WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
-          WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-          WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
-          WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-          WeatherContract.LocationEntry.COLUMN_COORD_LAT,
-          WeatherContract.LocationEntry.COLUMN_COORD_LONG,
-          WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID
+            WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
+            WeatherContract.WeatherEntry.COLUMN_DATE,
+            WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.LocationEntry.COLUMN_COORD_LAT,
+            WeatherContract.LocationEntry.COLUMN_COORD_LONG,
+            WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -55,7 +54,20 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_TIMEZONE_ID = 10;
 
     private ForecastAdapter mForecastAdapter;
+
     public ForecastFragment() {
+    }
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        void onItemSelected(Uri dateUri);
     }
 
     @Override
@@ -93,19 +105,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         forecastList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-        /*
-        //toast for testing
-        Toast toast = Toast.makeText(getActivity().getApplicationContext(), (String)
-            parent.getItemAtPosition(position), Toast.LENGTH_SHORT);
-        toast.show();
-        */
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    Intent detailIntent = new Intent(getActivity(), DetailActivity.class).setData
-                          (WeatherContract.WeatherEntry.buildWeatherLocationWithDate
-                                (locationSetting, cursor.getLong(COL_WEATHER_DATE)));
-                    startActivity(detailIntent);
+                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
                 }
             }
         });
@@ -124,15 +127,15 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         String timezoneID = "";
         Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
-              .buildWeatherLocation(locationSetting),
-              new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
+                        .buildWeatherLocation(locationSetting),
+                new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
         if (location.moveToFirst()) {
             timezoneID = location.getString(0);
         }
         location.close();
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
-              .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
-                    .currentTimeMillis() / 1000, timezoneID));
+                .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
+                        .currentTimeMillis() / 1000, timezoneID));
         //Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
         return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
     }
@@ -147,7 +150,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mForecastAdapter.swapCursor(null);
     }
 
-    void onLocationChanged( ) {
+    void onLocationChanged() {
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
