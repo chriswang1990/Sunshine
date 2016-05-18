@@ -1,9 +1,7 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/weather_detail_container"
-    android:name="com.upenn.chriswang1990.sunshine.DetailFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:layout="@layout/fragment_detail" />
+    tools:context=".DetailActivity"
+    tools:ignore="MergeRootFrame" />
