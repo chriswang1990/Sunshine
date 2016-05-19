@@ -95,10 +95,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        final ArrayList<String> forecastData = new ArrayList<>();
-//        forecastAdapter = new ArrayAdapter<>(getActivity(), R.layout
-//              .list_item_forecast, R.id.list_item_forecast_textview, forecastData);
-
         mForecastAdapter = new ForecastAdapter(getActivity(), null, 0);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView forecastList = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -136,11 +132,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mForecastAdapter.swapCursor(data);
-    }
-
-    @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
@@ -162,6 +153,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 null,
                 null,
                 sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
     }
 
     @Override

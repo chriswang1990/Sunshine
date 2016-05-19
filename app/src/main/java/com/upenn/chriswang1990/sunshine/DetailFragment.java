@@ -169,7 +169,6 @@ public class DetailFragment extends Fragment implements LoaderManager
             int weatherID = data.getInt(COL_WEATHER_CONDITION_ID);
             // Use placeholder Image
             mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
-
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
             String timezoneID = data.getString(COL_TIMEZONE_ID);
@@ -177,6 +176,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
             mFriendlyDateView.setText(friendlyDateText);
             mDateView.setText(dateText);
+            Log.d("onLoadFinished: ", friendlyDateText + " " + dateText);
 
             // Read description from cursor and update view
             String description = data.getString(COL_WEATHER_DESC);

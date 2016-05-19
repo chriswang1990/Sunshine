@@ -86,7 +86,6 @@ public class ForecastAdapter extends CursorAdapter {
             viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
         }
 
-
         long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
         String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));

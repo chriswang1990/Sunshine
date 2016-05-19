@@ -156,7 +156,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
 
             //Get the timezone from google API
-            String timezoneID = getTimezonID(cityLatitude, cityLongitude);
+            String timezoneID = getTimezoneID(cityLatitude, cityLongitude);
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude,
                   timezoneID);
 
@@ -331,7 +331,13 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         return null;
     }
 
-    private String getTimezonID(double cityLatitude, double cityLongitude) {
+    /**
+     * Get the timezoneID from google API by city lat and lon
+     * @param cityLatitude
+     * @param cityLongitude
+     * @return
+     */
+    private String getTimezoneID(double cityLatitude, double cityLongitude) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String timezoneID = "null";
