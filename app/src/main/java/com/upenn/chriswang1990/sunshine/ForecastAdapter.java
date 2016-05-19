@@ -15,8 +15,9 @@ import android.widget.TextView;
  */
 public class ForecastAdapter extends CursorAdapter {
 
-    private final int VIEW_TYPE_TODAY = 0;
-    private final int VIEW_TYPE_FUTURE_DAY = 1;
+    private static final int VIEW_TYPE_TODAY = 0;
+    private static final int VIEW_TYPE_FUTURE_DAY = 1;
+    private static final int VIEW_TYPE_COUNT = 2;
 
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
@@ -29,7 +30,7 @@ public class ForecastAdapter extends CursorAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 2;
+        return VIEW_TYPE_COUNT;
     }
 
 
@@ -67,13 +68,6 @@ public class ForecastAdapter extends CursorAdapter {
         return view;
     }
 
-    /*
-        This is where we fill-in the views with the contents of the cursor.
-     */
-
-    /*
-        This is where we fill-in the views with the contents of the cursor.
-     */
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
         // our view is pretty simple here --- just a text view

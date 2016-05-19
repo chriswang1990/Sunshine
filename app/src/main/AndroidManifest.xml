@@ -38,10 +38,7 @@
         </activity>
         <provider
             android:authorities="com.upenn.chriswang1990.sunshine"
-            android:name=".data.WeatherProvider"
-            android:enabled="true"
-            android:exported="true"
-            />
+            android:name=".data.WeatherProvider" />
 
     </application>
 

@@ -49,8 +49,8 @@ public class DetailFragment extends Fragment implements LoaderManager
             WeatherContract.WeatherEntry.COLUMN_WIND_SPEED,
             WeatherContract.WeatherEntry.COLUMN_DEGREES,
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
-            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING,
-            WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID
+            WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID,
+            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -65,6 +65,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     public static final int COL_WEATHER_DEGREES = 9;
     public static final int COL_WEATHER_CONDITION_ID = 10;
     static final int COL_TIMEZONE_ID = 11;
+    static final int COL_LOCATION_SETTING = 12;
 
     private ImageView mIconView;
     private TextView mFriendlyDateView;
@@ -171,9 +172,9 @@ public class DetailFragment extends Fragment implements LoaderManager
 
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
-            String timezonID = data.getString(COL_TIMEZONE_ID);
-            String friendlyDateText = Utility.getWeekTimeFormat(unixTimestamp, timezonID);
-            String dateText = Utility.getMonthDayFormat(unixTimestamp, timezonID);
+            String timezoneID = data.getString(COL_TIMEZONE_ID);
+            String friendlyDateText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
+            String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
             mFriendlyDateView.setText(friendlyDateText);
             mDateView.setText(dateText);
 
@@ -205,10 +206,12 @@ public class DetailFragment extends Fragment implements LoaderManager
             // Read pressure from cursor and update view
             float pressure = data.getFloat(COL_WEATHER_PRESSURE);
             mPressureView.setText(getActivity().getString(R.string.format_pressure, pressure));
-        }
-        // If onCreateOptionsMenu has already happened, we need to update the share intent now.
-        if (shareActionProvider != null) {
-            shareActionProvider.setShareIntent(createShareForecastIntent());
+
+            forecastStr = String.format("%s - %s - %s/%s", dateText, description, highString, lowString);
+            // If onCreateOptionsMenu has already happened, we need to update the share intent now.
+            if (shareActionProvider != null) {
+                shareActionProvider.setShareIntent(createShareForecastIntent());
+            }
         }
     }
 

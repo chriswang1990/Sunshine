@@ -55,9 +55,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     private ForecastAdapter mForecastAdapter;
 
-    public ForecastFragment() {
-    }
-
     /**
      * A callback interface that all activities containing this fragment must
      * implement. This mechanism allows activities to be notified of item
@@ -68,6 +65,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
          * DetailFragmentCallback for when an item has been selected.
          */
         void onItemSelected(Uri dateUri);
+    }
+
+    public ForecastFragment() {
     }
 
     @Override
@@ -86,6 +86,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             updateWeather();
+            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -108,7 +109,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
-                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationSetting, cursor.getLong(COL_WEATHER_DATE)));
+                    ((Callback) getActivity()).onItemSelected(WeatherContract.WeatherEntry.
+                            buildWeatherLocationWithDate(locationSetting, cursor.getLong
+                                    (COL_WEATHER_DATE)));
                 }
             }
         });
@@ -119,6 +122,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onActivityCreated(Bundle savedInstanceState) {
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
+    }
+
+    void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    }
+
+    public void updateWeather() {
+        FetchWeatherTask fetchWeather = new FetchWeatherTask(getActivity());
+        String location = Utility.getPreferredLocation(getActivity());
+        fetchWeather.execute(location);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
     }
 
     @Override
@@ -137,12 +156,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
         //Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
-        return new CursorLoader(getActivity(), weatherForLocationUri, FORECAST_COLUMNS, null, null, sortOrder);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        mForecastAdapter.swapCursor(data);
+        return new CursorLoader(getActivity(),
+                weatherForLocationUri,
+                FORECAST_COLUMNS,
+                null,
+                null,
+                sortOrder);
     }
 
     @Override
@@ -150,21 +169,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mForecastAdapter.swapCursor(null);
     }
 
-    void onLocationChanged() {
-        updateWeather();
-        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
-    }
-
-    public void updateWeather() {
-//        FetchWeatherTask getData = new FetchWeatherTask(getActivity());
-//        userPreferences = PreferenceManager.getDefaultSharedPreferences
-//              (getActivity());
-//        String location = userPreferences.getString(getString(R.string.pref_location_key),
-//              getString(R.string.pref_location_default));
-        FetchWeatherTask fetchWeather = new FetchWeatherTask(getActivity());
-        String location = Utility.getPreferredLocation(getActivity());
-        fetchWeather.execute(location);
-    }
 }
 
 
