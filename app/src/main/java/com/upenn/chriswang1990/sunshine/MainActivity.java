@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         // update the location in our second pane using the fragment manager
         if (location != null && !location.equals(mLocation)) {
             ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
-                  (R.id.forecast_fragment);
+                  (R.id.fragment_forecast);
             if ( null != ff ) {
                 ff.onLocationChanged();
             }
