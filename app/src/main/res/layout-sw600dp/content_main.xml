@@ -5,7 +5,8 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
-    tools:context="com.upenn.chriswang1990.sunshine.MainActivity">
+    tools:context="com.upenn.chriswang1990.sunshine.MainActivity"
+    android:layout_marginTop="64dp">>
 
     <!--
     This layout is a two-pane layout for the Items master/detail flow.

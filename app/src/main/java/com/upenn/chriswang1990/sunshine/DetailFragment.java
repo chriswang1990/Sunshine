@@ -68,7 +68,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     static final int COL_LOCATION_SETTING = 12;
 
     private ImageView mIconView;
-    private TextView mFriendlyDateView;
+    private TextView mDayView;
     private TextView mDateView;
     private TextView mDescriptionView;
     private TextView mHighTempView;
@@ -92,7 +92,7 @@ public class DetailFragment extends Fragment implements LoaderManager
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         mIconView = (ImageView) rootView.findViewById(R.id.detail_icon);
         mDateView = (TextView) rootView.findViewById(R.id.detail_date_textview);
-        mFriendlyDateView = (TextView) rootView.findViewById(R.id.detail_day_textview);
+        mDayView = (TextView) rootView.findViewById(R.id.detail_day_textview);
         mDescriptionView = (TextView) rootView.findViewById(R.id.detail_forecast_textview);
         mHighTempView = (TextView) rootView.findViewById(R.id.detail_high_textview);
         mLowTempView = (TextView) rootView.findViewById(R.id.detail_low_textview);
@@ -172,12 +172,10 @@ public class DetailFragment extends Fragment implements LoaderManager
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
             String timezoneID = data.getString(COL_TIMEZONE_ID);
-            String friendlyDateText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
+            String dayText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
             String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
-            mFriendlyDateView.setText(friendlyDateText);
+            mDayView.setText(dayText);
             mDateView.setText(dateText);
-            Log.d("onLoadFinished: ", friendlyDateText + " " + dateText);
-
             // Read description from cursor and update view
             String description = data.getString(COL_WEATHER_DESC);
             mDescriptionView.setText(description);
