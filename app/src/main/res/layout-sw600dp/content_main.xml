@@ -5,8 +5,7 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
-    tools:context="com.upenn.chriswang1990.sunshine.MainActivity"
-    android:layout_marginTop="64dp">>
+    tools:context="com.upenn.chriswang1990.sunshine.MainActivity">
 
     <!--
     This layout is a two-pane layout for the Items master/detail flow.
@@ -17,13 +16,15 @@
         android:name="com.upenn.chriswang1990.sunshine.ForecastFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="2"
-        tools:layout="@android:layout/list_content" />
+        android:layout_weight="3"
+        tools:layout="@android:layout/list_content"
+        android:layout_marginTop="32dp"/>
 
     <FrameLayout
         android:id="@+id/weather_detail_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight="4" />
+        android:layout_weight="5"
+        android:layout_marginTop="64dp"/>
 
 </LinearLayout>
