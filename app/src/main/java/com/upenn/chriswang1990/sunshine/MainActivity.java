@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (findViewById(R.id.weather_detail_container) != null) {
-            // The detail container view will be present only in the large-screen layouts
-            // (res/layout-sw600dp). If this view is present, then the activity should be
-            // in two-pane mode.
+            // Before we open the detail page on hand-held device, the detail container view will
+            // be present only in the large-screen layouts (res/layout-sw600dp). If this view is
+            // present, then the activity should be in two-pane mode.
             mTwoPane = true;
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
         } else {
             mTwoPane = false;
         }
+        ForecastFragment forecastFragment =  ((ForecastFragment)getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_forecast));
+        forecastFragment.setUseTodayLayout(!mTwoPane);
     }
 
     @Override
