@@ -15,7 +15,7 @@
     <string name="action_share_label">Share</string>
     <!-- Menu label to fetch updated weather info from the server -->
     <string name="action_refresh" translatable="false">Refresh</string>
-    <string name="title_activity_detail">Weather Detail</string>
+    <string name="title_activity_detail">Weather details</string>
     <!-- Preference key, value and default for Location, Unit setting -->
     <string name="pref_location_label">Location</string>
     <string name="pref_location_key" translatable="false">location</string>
