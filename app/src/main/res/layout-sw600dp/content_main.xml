@@ -5,6 +5,7 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
+    android:padding="16dp"
     tools:context="com.upenn.chriswang1990.sunshine.MainActivity">
 
     <!--
@@ -18,13 +19,13 @@
         android:layout_height="match_parent"
         android:layout_weight="3"
         tools:layout="@android:layout/list_content"
-        android:layout_marginTop="48dp"/>
+        android:layout_marginTop="32dp"/>
 
     <FrameLayout
         android:id="@+id/weather_detail_container"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="5"
-        android:layout_marginTop="64dp"/>
+        android:layout_marginTop="48dp"/>
 
 </LinearLayout>
