@@ -92,12 +92,6 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
         return locationId;
     }
 
-    /*
-        Students: This code will allow the FetchWeatherTask to continue to return the strings that
-        the UX expects so that we can continue to test the application even once we begin using
-        the database.
-     */
-
     /**
      * Take the String representing the complete forecast in JSON Format and
      * pull out the data we need to construct the Strings needed for the wireframes.
@@ -333,9 +327,9 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
     /**
      * Get the timezoneID from google API by city lat and lon
-     * @param cityLatitude
-     * @param cityLongitude
-     * @return
+     * @param cityLatitude latitude data for the city
+     * @param cityLongitude longitude data for the city
+     * @return Timezone ID of specific city lat and lon
      */
     private String getTimezoneID(double cityLatitude, double cityLongitude) {
         HttpURLConnection urlConnection = null;

@@ -3,11 +3,13 @@ package com.upenn.chriswang1990.sunshine;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,7 +29,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private static final String SELECTED_KEY = "selected_position";
-    private boolean mUseTodayLayout;
+    private boolean mTwoPane = false;
+    private boolean firstTimeStart = true;
 
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
@@ -63,7 +66,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
      */
     public interface Callback {
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * DetailFragment Callback for when an item has been selected.
          */
         void onItemSelected(Uri dateUri);
     }
@@ -108,6 +111,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                firstTimeStart = false;
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
@@ -190,10 +194,23 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d("ForecastFragment", "onLoadFinished: testing");
         mForecastAdapter.swapCursor(data);
+        if (firstTimeStart && mTwoPane) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    mListView.performItemClick(
+                            mForecastAdapter.getView(0, null, null),
+                            0,
+                            mForecastAdapter.getItemId(0));
+                }
+            });
+        }
         if (mPosition != ListView.INVALID_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
+        // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
+            mListView.setItemChecked(mPosition, true);
             mListView.smoothScrollToPosition(mPosition);
         }
     }
@@ -203,10 +220,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mForecastAdapter.swapCursor(null);
     }
 
-    public void setUseTodayLayout(boolean useTodayLayout) {
-        mUseTodayLayout = useTodayLayout;
+    public void setIsTwoPane(boolean isTwoPane) {
+        mTwoPane = isTwoPane;
         if (mForecastAdapter != null) {
-            mForecastAdapter.setUseTodayLayout(mUseTodayLayout);
+            mForecastAdapter.setIsTwoPane(mTwoPane);
         }
     }
 

@@ -18,19 +18,19 @@ public class ForecastAdapter extends CursorAdapter {
     private static final int VIEW_TYPE_TODAY = 0;
     private static final int VIEW_TYPE_FUTURE_DAY = 1;
     private static final int VIEW_TYPE_COUNT = 2;
-    private boolean mUseTodayLayout = true;
+    private boolean mTwoPane = false;
 
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
 
-    public void setUseTodayLayout(boolean useTodayLayout) {
-        mUseTodayLayout = useTodayLayout;
+    public void setIsTwoPane(boolean isTwoPane) {
+        mTwoPane = isTwoPane;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return (position == 0 && mUseTodayLayout) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+        return (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
     }
 
     @Override
@@ -75,13 +75,10 @@ public class ForecastAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        // our view is pretty simple here --- just a text view
-        // we'll keep the UI functional with a simple (and slow!) binding.
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
         int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
 
-        // Use placeholder image for now
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
             viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
@@ -97,6 +94,9 @@ public class ForecastAdapter extends CursorAdapter {
 
         String description = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
         viewHolder.descriptionView.setText(description);
+
+        //set image description for accessibility
+        viewHolder.iconView.setContentDescription(description);
 
         // Read user preference for metric or imperial temperature units
         boolean isMetric = Utility.isMetric(context);
