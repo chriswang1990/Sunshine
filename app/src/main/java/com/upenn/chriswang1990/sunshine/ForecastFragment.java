@@ -1,9 +1,9 @@
 package com.upenn.chriswang1990.sunshine;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -20,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
+import com.upenn.chriswang1990.sunshine.service.SunshineService;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -147,9 +148,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     public void updateWeather() {
-        FetchWeatherTask fetchWeather = new FetchWeatherTask(getActivity());
-        String location = Utility.getPreferredLocation(getActivity());
-        fetchWeather.execute(location);
+        Intent intent = new Intent(getActivity(), SunshineService.class);
+        intent.putExtra(SunshineService.LOCATION_QUERY_EXTRA,
+                Utility.getPreferredLocation(getActivity()));
+        getActivity().startService(intent);
     }
 
     @Override
@@ -196,17 +198,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d("ForecastFragment", "onLoadFinished: testing");
         mForecastAdapter.swapCursor(data);
-        if (firstTimeStart && mTwoPane) {
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    mListView.performItemClick(
-                            mForecastAdapter.getView(0, null, null),
-                            0,
-                            mForecastAdapter.getItemId(0));
-                }
-            });
-        }
+//        if (firstTimeStart && mTwoPane) {
+//            new Handler().post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mListView.performItemClick(
+//                            mForecastAdapter.getView(0, null, null),
+//                            0,
+//                            mForecastAdapter.getItemId(0));
+//                }
+//            });
+//        }
         if (mPosition != ListView.INVALID_POSITION) {
         // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.

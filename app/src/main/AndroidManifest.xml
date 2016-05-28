@@ -42,7 +42,7 @@
         <provider
             android:name=".data.WeatherProvider"
             android:authorities="com.upenn.chriswang1990.sunshine" />
-
+        <service android:name=".service.SunshineService"/>
     </application>
 
 </manifest>

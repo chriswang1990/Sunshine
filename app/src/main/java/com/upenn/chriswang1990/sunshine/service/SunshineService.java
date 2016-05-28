@@ -1,29 +1,17 @@
-package com.upenn.chriswang1990.sunshine;/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.upenn.chriswang1990.sunshine.service;
 
+import android.app.IntentService;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 
+import com.upenn.chriswang1990.sunshine.BuildConfig;
+import com.upenn.chriswang1990.sunshine.Utility;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
-import com.upenn.chriswang1990.sunshine.data.WeatherContract.WeatherEntry;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,20 +25,102 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Vector;
 
-public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
+public class SunshineService extends IntentService {
 
-    private final String LOG_TAG = FetchWeatherTask.class.getSimpleName();
+    private ArrayAdapter<String> mForecastAdapter;
+    public static final String LOCATION_QUERY_EXTRA = "lqe";
+    private final String LOG_TAG = SunshineService.class.getSimpleName();
 
-    private ForecastAdapter mForecastAdapter;
-    private final Context mContext;
-
-    public FetchWeatherTask(Context context) {
-        mContext = context;
+    public SunshineService() {
+        super("Sunshine");
     }
 
-    /* The date/time conversion code is going to be moved outside the asynctask later,
-     * so for convenience we're breaking it out into its own method now.
-     */
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        // These two need to be declared outside the try/catch
+        // so that they can be closed in the finally block.
+        String locationQuery = intent.getStringExtra(LOCATION_QUERY_EXTRA);
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+        // Will contain the raw JSON response as a string.
+        String forecastJsonStr;
+        String format = "json";
+        String units = "metric";
+        int numDays = 14;
+
+        try {
+            // Construct the URL for the OpenWeatherMap query
+            // Possible parameters are avaiable at OWM's forecast API page, at
+            // http://openweathermap.org/API#forecast
+            Uri.Builder weatherAPIBuilder = new Uri.Builder();
+            weatherAPIBuilder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
+                    ("2.5").appendPath("forecast").appendPath("daily");
+            final String QUERY_PARAM = "q";
+            final String FORMAT_PARAM = "mode";
+            final String UNITS_PARAM = "units";
+            final String DAYS_PARAM = "cnt";
+            final String APPID_PARAM = "APPID";
+
+            weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, locationQuery)
+                    .appendQueryParameter(FORMAT_PARAM, format)
+                    .appendQueryParameter(UNITS_PARAM, units)
+                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
+                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
+                    .build();
+
+            URL weatherAPIUrl = new URL(weatherAPIBuilder.toString());
+            Log.d(LOG_TAG, weatherAPIUrl.toString());
+            // Create the request to OpenWeatherMap, and open the connection
+            urlConnection = (HttpURLConnection) weatherAPIUrl.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.connect();
+
+            // Read the input stream into a String
+            InputStream inputStream = urlConnection.getInputStream();
+            StringBuilder stringBuilder = new StringBuilder();
+            if (inputStream == null) {
+                // Nothing to do
+                return;
+            }
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                // But it does make debugging a *lot* easier if you print out the completed
+                // buffer for debugging.
+                line += "\n";
+                stringBuilder.append(line);
+            }
+
+            if (stringBuilder.length() == 0) {
+                // Stream was empty.  No point in parsing.
+                return;
+            }
+            forecastJsonStr = stringBuilder.toString();
+            getWeatherDataFromJson(forecastJsonStr, locationQuery);
+            //Call api for the timezone info
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Error ", e);
+            // If the code didn't successfully get the weather data, there's no point in attempting
+            // to parse it.
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, e.getMessage(), e);
+            e.printStackTrace();
+        } finally {
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException e) {
+                    Log.e(LOG_TAG, "Error closing stream", e);
+                }
+            }
+        }
+    }
 
     /**
      * Helper method to handle insertion of a new location in the weather database.
@@ -62,20 +132,20 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
      * @return the row ID of the added location.
      */
     long addLocation(String locationSetting, String cityName, double lat, double lon, String
-          timezoneID) {
+            timezoneID) {
         // Students: First, check if the location with this city name exists in the db
         // If it exists, return the current ID
         // Otherwise, insert it using the content resolver and the base URI
         long locationId;
-        Cursor locationCursor = mContext.getContentResolver().query(
-              WeatherContract.LocationEntry.CONTENT_URI,
-              new String[]{WeatherContract.LocationEntry._ID},
-              WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
-              new String[]{locationSetting},
-              null);
+        Cursor locationCursor = this.getContentResolver().query(
+                WeatherContract.LocationEntry.CONTENT_URI,
+                new String[]{WeatherContract.LocationEntry._ID},
+                WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING + " = ?",
+                new String[]{locationSetting},
+                null);
         if (locationCursor.moveToFirst()) {
             int locationIdIndex = locationCursor.getColumnIndex(WeatherContract.LocationEntry
-                  ._ID);
+                    ._ID);
             locationId = locationCursor.getLong(locationIdIndex);
         } else {
             ContentValues locationValues = new ContentValues();
@@ -84,8 +154,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, lat);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, lon);
             locationValues.put(WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID, timezoneID);
-            Uri locationUri = mContext.getContentResolver().insert(WeatherContract.LocationEntry
-                  .CONTENT_URI, locationValues);
+            Uri locationUri = this.getContentResolver().insert(WeatherContract.LocationEntry
+                    .CONTENT_URI, locationValues);
             locationId = ContentUris.parseId(locationUri);
         }
         locationCursor.close();
@@ -100,8 +170,8 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
      * into an Object hierarchy for us.
      */
     private void getWeatherDataFromJson(String forecastJsonStr,
-                                            String locationSetting)
-          throws JSONException {
+                                        String locationSetting)
+            throws JSONException {
 
         // Now we have a String representing the complete forecast in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -152,7 +222,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             //Get the timezone from google API
             String timezoneID = getTimezoneID(cityLatitude, cityLongitude);
             long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude,
-                  timezoneID);
+                    timezoneID);
 
             // Insert the new weather information into the database
             Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
@@ -191,7 +261,7 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
                 // Description is in a child array called "weather", which is 1 element long.
                 // That element also contains a weather code.
                 JSONObject weatherObject =
-                      dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
+                        dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
                 description = weatherObject.getString(OWM_DESCRIPTION);
                 weatherId = weatherObject.getInt(OWM_WEATHER_ID);
 
@@ -203,17 +273,17 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
 
                 ContentValues weatherValues = new ContentValues();
 
-                weatherValues.put(WeatherEntry.COLUMN_LOC_KEY, locationId);
-                weatherValues.put(WeatherEntry.COLUMN_DATE, dateTime);
-                weatherValues.put(WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, unixTimestamp);
-                weatherValues.put(WeatherEntry.COLUMN_HUMIDITY, humidity);
-                weatherValues.put(WeatherEntry.COLUMN_PRESSURE, pressure);
-                weatherValues.put(WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
-                weatherValues.put(WeatherEntry.COLUMN_DEGREES, windDirection);
-                weatherValues.put(WeatherEntry.COLUMN_MAX_TEMP, high);
-                weatherValues.put(WeatherEntry.COLUMN_MIN_TEMP, low);
-                weatherValues.put(WeatherEntry.COLUMN_SHORT_DESC, description);
-                weatherValues.put(WeatherEntry.COLUMN_WEATHER_ID, weatherId);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTime);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, unixTimestamp);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
+                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
                 cVVector.add(weatherValues);
             }
@@ -221,108 +291,13 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             if ( cVVector.size() > 0 ) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
-                mContext.getContentResolver().bulkInsert(WeatherEntry.CONTENT_URI,
-                      values);
+                this.getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
+                        values);
             }
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
-    }
-
-    @Override
-    protected Void doInBackground(String... params) {
-
-        // If there's no zip code, there's nothing to look up.  Verify size of params.
-        if (params.length == 0) {
-            return null;
-        }
-        String locationQuery = params[0];
-
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-
-        // Will contain the raw JSON response as a string.
-        String forecastJsonStr;
-
-        String format = "json";
-        String units = "metric";
-        int numDays = 14;
-
-        try {
-            // Construct the URL for the OpenWeatherMap query
-            // Possible parameters are avaiable at OWM's forecast API page, at
-            // http://openweathermap.org/API#forecast
-            Uri.Builder weatherAPIBuilder = new Uri.Builder();
-            weatherAPIBuilder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
-                  ("2.5").appendPath("forecast").appendPath("daily");
-            final String QUERY_PARAM = "q";
-            final String FORMAT_PARAM = "mode";
-            final String UNITS_PARAM = "units";
-            final String DAYS_PARAM = "cnt";
-            final String APPID_PARAM = "APPID";
-
-            weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, params[0])
-                  .appendQueryParameter(FORMAT_PARAM, format)
-                  .appendQueryParameter(UNITS_PARAM, units)
-                  .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                  .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
-                  .build();
-
-            URL weatherAPIUrl = new URL(weatherAPIBuilder.toString());
-            Log.d(LOG_TAG, weatherAPIUrl.toString());
-            // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) weatherAPIUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuilder stringBuilder = new StringBuilder();
-            if (inputStream == null) {
-                // Nothing to do.
-                return null;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                line += "\n";
-                stringBuilder.append(line);
-            }
-
-            if (stringBuilder.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return null;
-            }
-            forecastJsonStr = stringBuilder.toString();
-            getWeatherDataFromJson(forecastJsonStr, locationQuery);
-            //Call api for the timezone info
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attempting
-            // to parse it.
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -339,12 +314,12 @@ public class FetchWeatherTask extends AsyncTask<String, Void, Void> {
             String latAndLon = cityLatitude + "," + cityLongitude;
             Uri.Builder timezoneAPIBuilder = new Uri.Builder();
             timezoneAPIBuilder.scheme("https").authority("maps.googleapis.com").appendPath
-                  ("maps").appendPath
-                  ("api").appendPath("timezone").appendPath("json");
+                    ("maps").appendPath
+                    ("api").appendPath("timezone").appendPath("json");
             timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
-                  .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis()/1000))
-                  .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
-                  .build();
+                    .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis()/1000))
+                    .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
+                    .build();
             URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) timezoneAPIUrl.openConnection();
