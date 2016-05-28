@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -143,6 +144,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     void onLocationChanged() {
+        firstTimeStart = true;
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
@@ -198,19 +200,19 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d("ForecastFragment", "onLoadFinished: testing");
         mForecastAdapter.swapCursor(data);
-//        if (firstTimeStart && mTwoPane) {
-//            new Handler().post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    mListView.performItemClick(
-//                            mForecastAdapter.getView(0, null, null),
-//                            0,
-//                            mForecastAdapter.getItemId(0));
-//                }
-//            });
-//        }
+        if (((Cursor) mForecastAdapter.getItem(0)).moveToFirst() && firstTimeStart && mTwoPane) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    mListView.performItemClick(
+                            mForecastAdapter.getView(0, null, null),
+                            0,
+                            mForecastAdapter.getItemId(0));
+                }
+            });
+        }
         if (mPosition != ListView.INVALID_POSITION) {
-        // If we don't need to restart the loader, and there's a desired position to restore
+            // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
             mListView.setItemChecked(mPosition, true);
             mListView.smoothScrollToPosition(mPosition);
@@ -228,7 +230,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             mForecastAdapter.setIsTwoPane(mTwoPane);
         }
     }
-
 }
 
 
