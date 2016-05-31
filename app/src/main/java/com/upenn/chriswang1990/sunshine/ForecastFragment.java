@@ -33,6 +33,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String SELECTED_KEY = "selected_position";
     private boolean mTwoPane = false;
     private boolean firstTimeStart = true;
+    String timezoneID = "";
 
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
@@ -176,17 +177,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // dates after or including today.
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        String timezoneID = "";
-        Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
-                        .buildWeatherLocation(locationSetting),
-                new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
-        if (location.moveToFirst()) {
-            timezoneID = location.getString(0);
-        }
-        location.close();
+        timezoneID = getTimezoneID(locationSetting);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
+        Log.d("ForecastFragment", "weatherURI: " + weatherForLocationUri.toString());
         //Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,
@@ -217,6 +212,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             mListView.setItemChecked(mPosition, true);
             mListView.smoothScrollToPosition(mPosition);
         }
+        if (timezoneID.equals("")) {
+            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+        }
     }
 
     @Override
@@ -229,6 +227,21 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mForecastAdapter != null) {
             mForecastAdapter.setIsTwoPane(mTwoPane);
         }
+    }
+
+    public String getTimezoneID(String locationSetting) {
+        String timezoneID;
+        Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
+                        .buildWeatherLocation(locationSetting),
+                new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
+        if (location.moveToFirst()) {
+            timezoneID = location.getString(0);
+        } else {
+            timezoneID = "";
+        }
+        Log.d("ForecastFragment", "getTimezoneID: " + timezoneID);
+        location.close();
+        return timezoneID;
     }
 }
 
