@@ -102,6 +102,10 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             if ( null != ff ) {
                 ff.onLocationChanged();
             }
+            DetailFragment fragment = new DetailFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
+                    .commit();
 //            DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
 //            if (df != null) {
 //                Log.d(LOG_TAG, "onResume: df found!!");
