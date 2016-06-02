@@ -1,9 +1,5 @@
 package com.upenn.chriswang1990.sunshine;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,7 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
-import com.upenn.chriswang1990.sunshine.service.SunshineService;
+import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -154,16 +150,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateWeather() {
-        Intent alarmIntent = new Intent(getActivity(), SunshineService.AlarmReceiver.class);
-        alarmIntent.putExtra(SunshineService.LOCATION_QUERY_EXTRA, Utility.getPreferredLocation(getActivity()));
-
-        //Wrap in a pending intent which only fires once.
-        PendingIntent pi = PendingIntent.getBroadcast(getActivity(), 0,alarmIntent,PendingIntent.FLAG_ONE_SHOT);//getBroadcast(context, 0, i, 0);
-
-        AlarmManager am=(AlarmManager)getActivity().getSystemService(Context.ALARM_SERVICE);
-
-        //Set the AlarmManager to wake up the system.
-        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pi);
+        //String location = Utility.getPreferredLocation(getActivity());
+        //new FetchWeatherTask(getActivity()).execute(location);
+        SunshineSyncAdapter.syncImmediately(getActivity());
     }
 
     @Override
@@ -204,7 +193,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.d("ForecastFragment", "onLoadFinished: testing");
         mForecastAdapter.swapCursor(data);
-        if (((Cursor) mForecastAdapter.getItem(0)).moveToFirst() && firstTimeStart && mTwoPane) {
+        if (mForecastAdapter.getItem(0) != null && ((Cursor)mForecastAdapter.getItem(0)).
+                moveToFirst() && firstTimeStart && mTwoPane) {
             if (timezoneID.equals("")) {
                 getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
                 return;
@@ -244,13 +234,13 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
                         .buildWeatherLocation(locationSetting),
                 new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
-        if (location.moveToFirst()) {
+        if (location != null && location.moveToFirst()) {
             timezoneID = location.getString(0);
+            location.close();
         } else {
             timezoneID = "";
         }
         Log.d("ForecastFragment", "getTimezoneID: " + timezoneID);
-        location.close();
         return timezoneID;
     }
 }
