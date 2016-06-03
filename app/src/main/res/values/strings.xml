@@ -46,7 +46,7 @@
     <!-- Humidity format CHAR LIMIT=25]-->
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
     <!-- SyncAdapter related -->
-    <string name="sync_account_type">sunshine.example.com</string>
+    <string name="sync_account_type">sunshine.chriswang1990.upenn.com</string>
     <string name="content_authority">com.upenn.chriswang1990.sunshine</string>
 
 </resources>
