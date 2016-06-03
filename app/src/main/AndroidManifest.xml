@@ -47,7 +47,7 @@
         </activity>
 
         <provider
-            android:authorities="com.example.android.sunshine.app"
+            android:authorities="com.upenn.chriswang1990.sunshine"
             android:name=".data.WeatherProvider"
             android:exported="false"
             android:syncable="true" />
