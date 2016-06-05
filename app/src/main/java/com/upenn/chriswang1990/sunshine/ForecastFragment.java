@@ -240,7 +240,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         } else {
             timezoneID = "";
         }
-        Log.d("ForecastFragment", "getTimezoneID: " + timezoneID);
         return timezoneID;
     }
 }
