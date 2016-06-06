@@ -48,6 +48,7 @@ public class ForecastAdapter extends CursorAdapter {
         public final TextView descriptionView;
         public final TextView highTempView;
         public final TextView lowTempView;
+        public final TextView cityNameView;
 
         public ViewHolder(View view) {
             iconView = (ImageView) view.findViewById(R.id.list_item_icon);
@@ -55,6 +56,7 @@ public class ForecastAdapter extends CursorAdapter {
             descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
             highTempView = (TextView) view.findViewById(R.id.list_item_high_textview);
             lowTempView = (TextView) view.findViewById(R.id.list_item_low_textview);
+            cityNameView = (TextView) view.findViewById(R.id.list_item_city_textview);
         }
     }
 
@@ -82,16 +84,20 @@ public class ForecastAdapter extends CursorAdapter {
         int viewType = getItemViewType(cursor.getPosition());
         if (viewType == VIEW_TYPE_TODAY) {
             viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+            //get and set city name in today list item view
+            String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
+            viewHolder.cityNameView.setText(cityName);
         } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
             viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherID));
         } else {
             viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
         }
-
+        //get date with get readable date method
         long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
         String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
+        //get and set description string
         String description = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
         viewHolder.descriptionView.setText(description);
 

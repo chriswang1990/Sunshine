@@ -1,5 +1,6 @@
 package com.upenn.chriswang1990.sunshine;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,14 +27,15 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
  * A placeholder fragment containing a simple view.
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private static final String SELECTED_KEY = "selected_position";
     private boolean mTwoPane = false;
     private boolean firstTimeStart = true;
+    private
     String timezoneID = "";
-
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
             WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
@@ -46,7 +48,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.LocationEntry.COLUMN_COORD_LAT,
             WeatherContract.LocationEntry.COLUMN_COORD_LONG,
-            WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID
+            WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID,
+            WeatherContract.LocationEntry.COLUMN_CITY_NAME
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -60,6 +63,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     static final int COL_COORD_LAT = 8;
     static final int COL_COORD_LONG = 9;
     static final int COL_TIMEZONE_ID = 10;
+    static final int COL_CITY_NAME = 11;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -93,6 +97,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (id == R.id.action_refresh) {
             updateWeather();
             getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+            return true;
+        }
+        if (id == R.id.action_map) {
+            openPreferredLocationInMap();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -153,6 +161,31 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         //String location = Utility.getPreferredLocation(getActivity());
         //new FetchWeatherTask(getActivity()).execute(location);
         SunshineSyncAdapter.syncImmediately(getActivity());
+    }
+
+    private void openPreferredLocationInMap() {
+        // Using the URI scheme for showing a location found on a map.  This super-handy
+        // intent can is detailed in the "Common Intents" page of Android's developer site:
+        // http://developer.android.com/guide/components/intents-common.html#Maps
+        if ( null != mForecastAdapter ) {
+            Cursor c = mForecastAdapter.getCursor();
+            if ( null != c ) {
+                c.moveToPosition(0);
+                String posLat = c.getString(COL_COORD_LAT);
+                String posLong = c.getString(COL_COORD_LONG);
+                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoLocation);
+
+                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                    startActivity(intent);
+                } else {
+                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+                }
+            }
+
+        }
     }
 
     @Override

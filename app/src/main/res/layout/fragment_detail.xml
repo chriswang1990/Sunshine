@@ -11,6 +11,14 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- city name -->
+        <TextView
+            android:id="@+id/detail_city_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textSize="28sp" />
+
         <!-- Header: Day, Date -->
         <TextView
             android:fontFamily="sans-serif-condensed"

@@ -13,8 +13,18 @@
         android:layout_weight="7"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
-        android:layout_marginLeft="60dp"
         android:orientation="vertical">
+
+        <!-- city name -->
+        <TextView
+            android:id="@+id/list_item_city_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:textAppearanceMedium"
+            android:textSize="24sp"
+            android:padding="16dp"
+            android:layout_marginLeft="16dp"
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/list_item_date_textview"
@@ -22,14 +32,16 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:textAppearanceLarge"
             android:fontFamily="sans-serif-condensed"
+            android:layout_marginLeft="60dp"
             android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/list_item_high_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="72sp"
+            android:textSize="48sp"
             android:fontFamily="sans-serif-light"
+            android:layout_marginLeft="60dp"
             android:textColor="@color/white" />
 
         <TextView
@@ -37,8 +49,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:textSize="36sp"
-            android:layout_marginLeft="8dp"/>
+            android:textSize="24sp"
+            android:layout_marginLeft="68dp"/>
     </LinearLayout>
 
     <LinearLayout

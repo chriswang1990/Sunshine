@@ -49,7 +49,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             WeatherContract.WeatherEntry.COLUMN_DEGREES,
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID,
-            WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING
+            WeatherContract.LocationEntry.COLUMN_CITY_NAME
     };
 
     static final int COL_WEATHER_ID = 0;
@@ -64,7 +64,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     public static final int COL_WEATHER_DEGREES = 9;
     public static final int COL_WEATHER_CONDITION_ID = 10;
     static final int COL_TIMEZONE_ID = 11;
-    static final int COL_LOCATION_SETTING = 12;
+    static final int COL_CITY_NAME = 12;
 
     private ImageView mIconView;
     private TextView mDayView;
@@ -75,6 +75,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     private TextView mHumidityView;
     private TextView mWindView;
     private TextView mPressureView;
+    private TextView mCityNameView;
 
     public DetailFragment() {
         setHasOptionsMenu(true);
@@ -98,6 +99,7 @@ public class DetailFragment extends Fragment implements LoaderManager
         mHumidityView = (TextView) rootView.findViewById(R.id.detail_humidity_textview);
         mWindView = (TextView) rootView.findViewById(R.id.detail_wind_textview);
         mPressureView = (TextView) rootView.findViewById(R.id.detail_pressure_textview);
+        mCityNameView = (TextView) rootView.findViewById(R.id.detail_city_name);
         return rootView;
     }
 
@@ -165,8 +167,14 @@ public class DetailFragment extends Fragment implements LoaderManager
         if (data != null && data.moveToFirst()) {
             // Read weather condition ID from cursor
             int weatherID = data.getInt(COL_WEATHER_CONDITION_ID);
+
             // Use placeholder Image
             mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+
+            //read city name and update
+            String cityName = data.getString(COL_CITY_NAME);
+            mCityNameView.setText(cityName);
+
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
             String timezoneID = data.getString(COL_TIMEZONE_ID);
@@ -174,11 +182,12 @@ public class DetailFragment extends Fragment implements LoaderManager
             String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
             mDayView.setText(dayText);
             mDateView.setText(dateText);
+
             // Read description from cursor and update view
             String description = data.getString(COL_WEATHER_DESC);
             mDescriptionView.setText(description);
-
             mIconView.setContentDescription(description);
+
             // Read high temperature from cursor and update view
             double high = data.getDouble(COL_WEATHER_MAX_TEMP);
             String highString = Utility.formatTemperature(getActivity(), high);
