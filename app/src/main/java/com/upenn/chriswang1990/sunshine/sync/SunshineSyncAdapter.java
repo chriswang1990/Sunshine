@@ -295,14 +295,20 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 cVVector.add(weatherValues);
             }
             // add to database
+            int rowsDeleted = 0;
             if ( cVVector.size() > 0 ) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
                 getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
                         values);
+                rowsDeleted = getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                        WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
+                        new String[] {Long.toString(Utility.normalizeDate(System.currentTimeMillis()
+                                / 1000, mTimezoneID) - 1)});
                 notifyWeather();
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
+            Log.d(LOG_TAG, "getWeatherDataFromJson: deleted " + rowsDeleted + " rows");
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
