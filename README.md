@@ -1,9 +1,9 @@
 # Sunshine
 #### Android Weather App - Udacity Android course project
 ##### Main features:
-* Call the OpenWeatherMap and Google Timezone API for weather and date data
-* Use SQLite database with customized content provider for weather data storage and query
-* 
+* Call the ***OpenWeatherMap*** and ***Google Timezone API*** for weather and date data
+* Use ***SQLite*** database with customized ***content provider*** for weather data storage and query
+* Provide options for user to change location and units preferrence in setting
 ##### Several improvements to the original course project:
 * Call the ***Google timezone API*** to get the timezone ID for the query location, fix the bug that the app is not displaying correct local date and weather for the query location
 * Use Date class instead of the deprecated Time class for date, simplify the code and make date calculation more robust
