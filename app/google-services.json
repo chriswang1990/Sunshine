@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "140496634415",
+    "firebase_url": "https://backendapi-1365.firebaseio.com",
+    "project_id": "backendapi-1365",
+    "storage_bucket": "backendapi-1365.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:140496634415:android:c7c2ce2655ad2800",
+        "android_client_info": {
+          "package_name": "com.upenn.chriswang1990.sunshine"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "140496634415-e180876oa0mt2h6rc3f9h4d8873kk5nm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBo-XfDh0E1CVbz3l17RyFNckDjJXPLNso"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
