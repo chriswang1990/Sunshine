@@ -17,3 +17,5 @@
 * (In in two-panel mode) The today entry is auto selected when the app startup or when user change location setting
 * Use the new toolbar Class instead of the deprecated ActionBar class, separate the activity and content layout XML accordingly 
 * Display city name in today list item view and detail fragment to remind user for weather location
+* Use PrefsFragment for Setting activity
+* Beautify the GUI with background color, text style and font family setting
