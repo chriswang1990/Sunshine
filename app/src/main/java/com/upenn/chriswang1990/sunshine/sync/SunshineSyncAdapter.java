@@ -72,6 +72,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
+
+        //refreshing last sync time
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences.Editor editor = prefs.edit();
+        String lastDataSyncKey = getContext().getString(R.string.pref_last_data_sync);
+        editor.putLong(lastDataSyncKey, System.currentTimeMillis());
+        editor.apply();
+
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
         String locationQuery = Utility.getPreferredLocation(getContext());

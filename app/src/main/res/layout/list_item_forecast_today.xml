@@ -24,7 +24,8 @@
             android:padding="16dp"
             android:layout_marginLeft="16dp"
             android:layout_marginStart="16dp"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/list_item_date_textview"

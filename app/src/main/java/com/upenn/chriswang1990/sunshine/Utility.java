@@ -2,7 +2,10 @@ package com.upenn.chriswang1990.sunshine;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.preference.PreferenceManager;
+
+import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +30,27 @@ public class Utility {
         return prefs.getString(context.getString(R.string.pref_units_key),
               context.getString(R.string.pref_units_metric))
               .equals(context.getString(R.string.pref_units_metric));
+    }
+
+    public static long getLastDataSync(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String dataSyncKey = context.getString(R.string.pref_last_data_sync);
+        return prefs.getLong(dataSyncKey, 0);
+    }
+
+    public static String getTimezoneID(Context context) {
+        String timezoneID;
+        String locationSetting = getPreferredLocation(context);
+        Cursor location = context.getContentResolver().query(WeatherContract.WeatherEntry
+                        .buildWeatherLocation(locationSetting),
+                new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
+        if (location != null && location.moveToFirst()) {
+            timezoneID = location.getString(0);
+            location.close();
+        } else {
+            timezoneID = "";
+        }
+        return timezoneID;
     }
 
     static String getReadableDateString(long unixTimestamp, String timezoneID) {

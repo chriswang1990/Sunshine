@@ -34,8 +34,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String SELECTED_KEY = "selected_position";
     private boolean mTwoPane = false;
     private boolean firstTimeStart = true;
-    private
-    String timezoneID = "";
+    private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
+    private String timezoneID = "";
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
             WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
@@ -147,6 +147,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        //update weather if it's more than one day since last weather sync
+        initializeData();
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
@@ -208,7 +210,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // dates after or including today.
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        timezoneID = getTimezoneID(locationSetting);
+        timezoneID = Utility.getTimezoneID(getActivity());
+        Log.d("testing", "onCreateLoader: " + timezoneID);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
@@ -262,18 +265,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    public String getTimezoneID(String locationSetting) {
-        String timezoneID;
-        Cursor location = getActivity().getContentResolver().query(WeatherContract.WeatherEntry
-                        .buildWeatherLocation(locationSetting),
-                new String[]{WeatherContract.LocationEntry.COLUMN_TIMEZONE_ID}, null, null, null);
-        if (location != null && location.moveToFirst()) {
-            timezoneID = location.getString(0);
-            location.close();
-        } else {
-            timezoneID = "";
+    public void initializeData() {
+        long lastDataSync = Utility.getLastDataSync(getActivity());
+        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
+            updateWeather();
         }
-        return timezoneID;
     }
 }
 
