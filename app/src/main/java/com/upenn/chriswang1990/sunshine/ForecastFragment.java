@@ -271,6 +271,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             updateWeather();
         }
     }
+
+    public void restartLoader() {
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    }
 }
 
 
