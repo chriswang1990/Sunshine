@@ -32,14 +32,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/black"/>
 
         <TextView
             android:id="@+id/list_item_forecast_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceSmall"/>
+            android:textAppearance="?android:textAppearanceSmall"
+            android:textColor="@color/black"/>
     </LinearLayout>
 
     <LinearLayout
@@ -55,7 +57,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceLarge"/>
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textColor="@color/black"/>
 
         <TextView
             android:id="@+id/list_item_low_textview"
@@ -63,6 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:fontFamily="sans-serif-condensed"
-            android:textAppearance="?android:textAppearanceSmall"/>
+            android:textAppearance="?android:textAppearanceSmall"
+            android:textColor="@color/black"/>
     </LinearLayout>
 </LinearLayout>

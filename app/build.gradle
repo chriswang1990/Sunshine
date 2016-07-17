@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.upenn.chriswang1990.sunshine"
-        minSdkVersion 11
+        minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
