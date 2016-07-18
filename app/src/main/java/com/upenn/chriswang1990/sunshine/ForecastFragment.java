@@ -117,6 +117,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         // Get a reference to the ListView, and attach this adapter to it.
         mListView = (ListView) rootView.findViewById(R.id.listview_forecast);
+        View emptyView = rootView.findViewById(R.id.listview_forecast_empty);
+        mListView.setEmptyView(emptyView);
         mListView.setAdapter(mForecastAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -211,7 +213,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
         timezoneID = Utility.getTimezoneID(getActivity());
-        Log.d("testing", "onCreateLoader: " + timezoneID);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
@@ -227,7 +228,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        Log.d("ForecastFragment", "onLoadFinished: testing");
         mForecastAdapter.swapCursor(data);
         if (mForecastAdapter.getItem(0) != null && ((Cursor)mForecastAdapter.getItem(0)).
                 moveToFirst() && firstTimeStart && mTwoPane) {
