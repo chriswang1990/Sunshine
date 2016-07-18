@@ -19,6 +19,8 @@
     <!-- Preference key, value and default for Location, Unit setting -->
     <string name="pref_location_label">Location</string>
     <string name="pref_location_key" translatable="false">location</string>
+    <!-- Key for location status -->
+    <string name="pref_location_status_key" translatable="false">loc-status</string>
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
     <string name="pref_units_label">Unit Setting</string>
     <string name="pref_units_default">metric</string>
