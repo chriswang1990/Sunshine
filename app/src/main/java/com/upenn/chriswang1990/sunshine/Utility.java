@@ -3,6 +3,8 @@ package com.upenn.chriswang1990.sunshine;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
@@ -233,4 +235,9 @@ public class Utility {
         return -1;
     }
 
+    public static boolean isNetworkAvailable(Context c) {
+        ConnectivityManager cm = (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activityNetwork = cm.getActiveNetworkInfo();
+        return activityNetwork != null && activityNetwork.isConnectedOrConnecting();
+    }
 }

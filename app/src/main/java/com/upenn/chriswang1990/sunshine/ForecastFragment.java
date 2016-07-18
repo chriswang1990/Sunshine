@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -19,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
@@ -33,7 +33,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private int mPosition = ListView.INVALID_POSITION;
     private static final String SELECTED_KEY = "selected_position";
     private boolean mTwoPane = false;
-    private boolean firstTimeStart = true;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private String timezoneID = "";
     private static final int FORECAST_LOADER = 0;
@@ -123,7 +122,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                firstTimeStart = false;
                 Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
                 if (cursor != null) {
                     String locationSetting = Utility.getPreferredLocation(getActivity());
@@ -150,13 +148,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         //update weather if it's more than one day since last weather sync
-        initializeData();
+        //initializeData();
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     void onLocationChanged() {
-        firstTimeStart = true;
         updateWeather();
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
@@ -229,28 +226,13 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mForecastAdapter.swapCursor(data);
-        if (mForecastAdapter.getItem(0) != null && ((Cursor)mForecastAdapter.getItem(0)).
-                moveToFirst() && firstTimeStart && mTwoPane) {
-            if (timezoneID.equals("")) {
-                getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
-                return;
-            }
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    mListView.performItemClick(
-                            mForecastAdapter.getView(0, null, null),
-                            0,
-                            mForecastAdapter.getItemId(0));
-                }
-            });
-        }
         if (mPosition != ListView.INVALID_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
             mListView.setItemChecked(mPosition, true);
             mListView.smoothScrollToPosition(mPosition);
         }
+        updateEmptyView();
     }
 
     @Override
@@ -274,6 +256,18 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     public void restartLoader() {
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    }
+
+    private void updateEmptyView() {
+        if (mForecastAdapter.getCount() == 0) {
+            TextView tv = (TextView) getView().findViewById(R.id.listview_forecast_empty);
+            if (null != tv) {
+                int message = R.string.empty_forecast_list;
+                if (!Utility.isNetworkAvailable(getActivity()) ) {
+                    tv.setText(message);
+                }
+            }
+        }
     }
 }
 
