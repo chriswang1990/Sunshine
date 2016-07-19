@@ -21,6 +21,11 @@
     <string name="pref_location_key" translatable="false">location</string>
     <!-- Key for location status -->
     <string name="pref_location_status_key" translatable="false">loc-status</string>
+
+    <!-- Strings used when displaying the state of the Location in settings -->
+    <string name="pref_location_error_description">Invalid Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_unknown_description">Validating Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
     <string name="pref_units_label">Unit Setting</string>
     <string name="pref_units_default">metric</string>
@@ -48,8 +53,8 @@
     <!-- Humidity format CHAR LIMIT=25]-->
     <string name="format_humidity">Humidity: <xliff:g id="humidity">%1.0f</xliff:g> %%</string>
     <!-- SyncAdapter related -->
-    <string name="sync_account_type">sunshine.chriswang1990.upenn.com</string>
-    <string name="content_authority">com.upenn.chriswang1990.sunshine</string>
+    <string name="sync_account_type" translatable="false">sunshine.chriswang1990.upenn.com</string>
+    <string name="content_authority" translatable="false">com.upenn.chriswang1990.sunshine</string>
 
     <!-- Notification Format -->
     <string name="format_notification">Forecast: <xliff:g id="condition">%1$s</xliff:g> High: <xliff:g id="high">%2$s</xliff:g> Low: <xliff:g id="low">%3$s</xliff:g></string>

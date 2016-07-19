@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/com.upenn.chriswang1990.sunshine"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <EditTextPreference
+    <com.upenn.chriswang1990.sunshine.LocationEditTextPreference
         android:defaultValue="@string/pref_location_default"
         android:inputType="text"
         android:key="@string/pref_location_key"
         android:singleLine="true"
-        android:title="@string/pref_location_label"/>
+        android:title="@string/pref_location_label"
+        custom:minLength="3"/>
     <ListPreference
         android:defaultValue="@string/pref_units_default"
         android:title="@string/pref_units_label"

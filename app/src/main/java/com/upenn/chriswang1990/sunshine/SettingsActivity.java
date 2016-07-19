@@ -54,6 +54,20 @@ public class SettingsActivity extends Activity {
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
         }
 
+        @Override
+        public void onResume() {
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            sp.registerOnSharedPreferenceChangeListener(this);
+            super.onResume();
+        }
+
+        @Override
+        public void onPause() {
+            SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            sp.unregisterOnSharedPreferenceChangeListener(this);
+            super.onPause();
+        }
+
         /**
          * Attaches a listener so the summary is always updated with the preference value.
          * Also fires the listener once, to initialize the summary (so it shows up before the value
@@ -72,6 +86,11 @@ public class SettingsActivity extends Activity {
 
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
+            setPreferenceSummary(preference,value);
+            return true;
+        }
+
+        private void setPreferenceSummary(Preference preference, Object value) {
             String stringValue = value.toString();
 
             if (preference instanceof ListPreference) {
@@ -86,7 +105,6 @@ public class SettingsActivity extends Activity {
                 // For other preferences, set the summary to the value's simple string representation.
                 preference.setSummary(stringValue);
             }
-            return true;
         }
 
         @Override
