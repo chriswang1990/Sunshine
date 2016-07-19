@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="http://schemas.android.com/tools">
+    <string name="app_name">Sunshine</string>
+    <string name="action_map">地图位置</string>
+    <string name="action_refresh">刷新</string>
+    <string name="action_settings">设置</string>
+    <string name="action_share_label">分享天气</string>
+    <string name="empty_forecast_list">天气数据不可用，请等待或尝试刷新</string>
+    <string name="empty_forecast_list_invalid_location">天气数据不可用，服务器无法识别输入的地址</string>
+    <string name="empty_forecast_list_no_network">天气数据不可用，没有可用的网络连接</string>
+    <string name="empty_forecast_list_server_down">天气数据不可用，服务器未相应，请等待或尝试刷新</string>
+    <string name="empty_forecast_list_server_error">天气数据不可用，服务器未返回合法数据，请下载最新版本的Sunshine软件</string>
+    <string name="format_notification">今日天气:<xliff:g id="condition">%1$s</xliff:g> 高: <xliff:g id="high">%2$s</xliff:g> 低: <xliff:g id="low">%3$s</xliff:g></string>
+    <string name="image_attr">天气状况图片</string>
+    <string name="pref_enable_notifications_false">未启用</string>
+    <string name="pref_enable_notifications_label">天气通知</string>
+    <string name="pref_enable_notifications_true">启用</string>
+    <string name="pref_location_error_description">地址无法识别 (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_label">地点</string>
+    <string name="pref_location_unknown_description">已识别地点(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_units_label">单位制</string>
+    <string name="title_activity_detail">天气详情</string>
+</resources>
