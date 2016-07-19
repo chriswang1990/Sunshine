@@ -8,6 +8,7 @@ import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
+import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -239,5 +240,17 @@ public class Utility {
         ConnectivityManager cm = (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activityNetwork = cm.getActiveNetworkInfo();
         return activityNetwork != null && activityNetwork.isConnectedOrConnecting();
+    }
+
+    /**
+     *
+     * @param c Context used to get the SharedPreferences
+     * @return the location status integer type
+     */
+    @SuppressWarnings("ResourceType")
+    static public @SunshineSyncAdapter.LocationStatus
+    int getLocationStatus(Context c){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        return sp.getInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
     }
 }
