@@ -4,12 +4,16 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+
+import com.upenn.chriswang1990.sunshine.data.WeatherContract;
+import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -38,7 +42,7 @@ public class SettingsActivity extends Activity {
         return super.getParentActivityIntent().addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     }
 
-    public static class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener{
+    public static class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener{
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -83,6 +87,18 @@ public class SettingsActivity extends Activity {
                 preference.setSummary(stringValue);
             }
             return true;
+        }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key.equals("location")) {
+                //when location change, clear locationStatus
+                Utility.resetLocationStatus(getActivity());
+                SunshineSyncAdapter.syncImmediately(getActivity());
+            }else if (key.equals("units")) {
+                //units have changed. update lists of weather entries accordingly
+                getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
+            }
         }
     }
 }

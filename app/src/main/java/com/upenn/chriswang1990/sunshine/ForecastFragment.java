@@ -171,7 +171,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     void onLocationChanged() {
         updateWeather();
-        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+        restartLoader();
     }
 
     private void updateWeather() {
@@ -263,13 +263,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    public void initializeData() {
-        long lastDataSync = Utility.getLastDataSync(getActivity());
-        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
-            updateWeather();
-        }
-    }
-
     public void restartLoader() {
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
@@ -287,6 +280,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                     case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
                         message = R.string.empty_forecast_list_server_error;
                         break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                        message = R.string.empty_forecast_list_invalid_location;
+                        break;
                     default:
                         if (!Utility.isNetworkAvailable(getActivity())) {
                             message = R.string.empty_forecast_list_no_network;
@@ -303,6 +299,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             updateEmptyView();
         }
     }
-}
 
+    public void initializeData() {
+        long lastDataSync = Utility.getLastDataSync(getActivity());
+        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
+            updateWeather();
+        }
+    }
+}
 
