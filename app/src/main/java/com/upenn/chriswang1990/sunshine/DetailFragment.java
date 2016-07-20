@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
 /**
@@ -134,15 +135,14 @@ public class DetailFragment extends Fragment implements LoaderManager
         super.onActivityCreated(savedInstanceState);
     }
 
-//    void onLocationChanged(String newLocation) {
-//        // replace the uri, since the location has changed
-//        Uri uri = mUri;
-//        if (null != uri) {
-//            long date = WeatherContract.WeatherEntry.getDateFromUri(uri);
-//            mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
-//            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
-//        }
-//    }
+    void onLocationChanged(String newLocation) {
+        // replace the uri, since the location has changed
+        if (null != mUri) {
+            long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
+            mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
+        }
+    }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -168,8 +168,10 @@ public class DetailFragment extends Fragment implements LoaderManager
             // Read weather condition ID from cursor
             int weatherID = data.getInt(COL_WEATHER_CONDITION_ID);
 
-            // Use placeholder Image
-            mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+            Glide.with(this)
+                    .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherID))
+                    .error(Utility.getArtResourceForWeatherCondition(weatherID))
+                    .into(mIconView);
 
             //read city name and update
             String cityName = data.getString(COL_CITY_NAME);

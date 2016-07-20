@@ -24,7 +24,7 @@
 
     <!-- Strings used when displaying the state of the Location in settings -->
     <string name="pref_location_error_description">Invalid Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
-    <string name="pref_location_unknown_description">Validating Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_unknown_description">Validating Location ... (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
 
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
     <string name="pref_units_label">Unit Setting</string>
@@ -32,6 +32,9 @@
     <string name="pref_units_key" translatable="false">unit</string>
     <string name="pref_units_metric" translatable="false">metric</string>
     <string name="pref_units_imperial" translatable="false">imperial</string>
+
+    <!-- Format for retrieving art from an external source [CHAR LIMIT=NONE] -->
+    <string name="format_art_url" translatable="false">https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-xxhdpi/art_<xliff:g id="description">%s</xliff:g>.png</string>
     <!-- image attribute for weather description -->
     <string name="image_attr">weather condition image</string>
     <!-- Temperature formats in degrees [CHAR LIMIT=NONE] -->
@@ -75,5 +78,67 @@
     <string name="empty_forecast_list_server_down">No weather information available. The server is not returning data. Please wait or try refreshing</string>
     <string name="empty_forecast_list_server_error">No weather information available. The server is not returning valid data. Please check for an updated version of Sunshine.</string>
     <string name="empty_forecast_list_invalid_location">No weather information available. The location in settings is not recognized by the weather server.</string>
+    <string name="pref_art_pack_key">art_pack</string>
+    <string name="pref_art_pack_sunshine">https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-xxhdpi/art_%s.png</string>
+
+    <!-- Weather Conditions -->
+    <string name="condition_2xx">Storm</string>
+    <string name="condition_3xx">Drizzle</string>
+    <string name="condition_500">Light Rain</string>
+    <string name="condition_501">Moderate Rain</string>
+    <string name="condition_502">Heavy Rain</string>
+    <string name="condition_503">Intense Rain</string>
+    <string name="condition_504">Extreme Rain</string>
+    <string name="condition_511">Freezing Rain</string>
+    <string name="condition_520">Light Shower</string>
+    <string name="condition_521">Shower</string>
+    <string name="condition_522">Heavy Shower</string>
+    <string name="condition_531">Ragged Shower</string>
+    <string name="condition_600">Light Snow</string>
+    <string name="condition_601">Snow</string>
+    <string name="condition_602">Heavy Snow</string>
+    <string name="condition_611">Sleet</string>
+    <string name="condition_612">Shower Sleet</string>
+    <string name="condition_615">Rain and Snow</string> <!-- light rain and snow -->
+    <string name="condition_616">Rain and Snow</string>
+    <string name="condition_620">Shower Snow</string> <!-- light shower snow -->
+    <string name="condition_621">Shower Snow</string>
+    <string name="condition_622">Shower Snow</string> <!-- heavy shower snow -->
+    <string name="condition_701">Mist</string>
+    <string name="condition_711">Smoke</string>
+    <string name="condition_721">Haze</string>
+    <string name="condition_731">Sand, Dust</string>
+    <string name="condition_741">Fog</string>
+    <string name="condition_751">Sand</string>
+    <string name="condition_761">Dust</string>
+    <string name="condition_762">Volcanic Ash</string>
+    <string name="condition_771">Squalls</string>
+    <string name="condition_781">Tornado</string>
+    <string name="condition_800">Clear</string>
+    <string name="condition_801">Mostly Clear</string>
+    <string name="condition_802">Scattered Clouds</string>
+    <string name="condition_803">Broken Clouds</string>
+    <string name="condition_804">Overcast Clouds</string>
+    <string name="condition_900">Tornado</string>
+    <string name="condition_901">Tropical Storm</string>
+    <string name="condition_902">Hurricane</string>
+    <string name="condition_903">Cold</string>
+    <string name="condition_904">Hot</string>
+    <string name="condition_905">Windy</string>
+    <string name="condition_906">Hail</string>
+    <string name="condition_951">Calm</string>
+    <string name="condition_952">Light Breeze</string>
+    <string name="condition_953">Gentle Breeze</string>
+    <string name="condition_954">Breeze</string> <!-- moderate breeze -->
+    <string name="condition_955">Fresh Breeze</string>
+    <string name="condition_956">Strong Breeze</string>
+    <string name="condition_957">High Wind</string>
+    <string name="condition_958">Gale</string>
+    <string name="condition_959">Severe Gale</string>
+    <string name="condition_960">Storm</string>
+    <string name="condition_961">Violent Storm</string>
+    <string name="condition_962">Hurricane</string>
+
+    <string name="condition_unknown">Unknown (<xliff:g id="low">%1$s</xliff:g>)</string>
 
 </resources>

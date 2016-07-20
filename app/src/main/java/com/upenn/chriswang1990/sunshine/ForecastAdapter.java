@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
@@ -23,21 +25,6 @@ public class ForecastAdapter extends CursorAdapter {
     public ForecastAdapter(Context context, Cursor c, int flags) {
         super(context, c, flags);
     }
-
-    public void setIsTwoPane(boolean isTwoPane) {
-        mTwoPane = isTwoPane;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return VIEW_TYPE_COUNT;
-    }
-
 
     /**
      * Cache of the children views for a forecast list item.
@@ -80,18 +67,27 @@ public class ForecastAdapter extends CursorAdapter {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
         int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
-
         int viewType = getItemViewType(cursor.getPosition());
+        int fallbackIconId;
+
         if (viewType == VIEW_TYPE_TODAY) {
-            viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherID));
+            fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
             //get and set city name in today list item view
             String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
             viewHolder.cityNameView.setText(cityName);
         } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
-            viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherID));
+            fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
         } else {
             viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
+            fallbackIconId = R.mipmap.ic_launcher;
         }
+
+        Glide.with(mContext)
+                .load(Utility.getArtUrlForWeatherCondition(mContext, weatherID))
+                .error(fallbackIconId)
+                .crossFade()
+                .into(viewHolder.iconView);
+
         //get date with get readable date method
         long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
         String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
@@ -110,5 +106,19 @@ public class ForecastAdapter extends CursorAdapter {
         viewHolder.highTempView.setText(Utility.formatTemperature(context, high));
         double low = cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP);
         viewHolder.lowTempView.setText(Utility.formatTemperature(context, low));
+    }
+
+    public void setIsTwoPane(boolean isTwoPane) {
+        mTwoPane = isTwoPane;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return VIEW_TYPE_COUNT;
     }
 }

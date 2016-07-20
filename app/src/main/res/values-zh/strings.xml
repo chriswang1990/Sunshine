@@ -17,7 +17,7 @@
     <string name="pref_enable_notifications_true">启用</string>
     <string name="pref_location_error_description">地址无法识别 (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_label">地点</string>
-    <string name="pref_location_unknown_description">已识别地点(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_unknown_description">地点识别中... (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_units_label">单位制</string>
     <string name="title_activity_detail">天气详情</string>
 </resources>

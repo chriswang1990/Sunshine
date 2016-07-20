@@ -34,9 +34,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private ListView mListView;
     private int mPosition = ListView.INVALID_POSITION;
     private static final String SELECTED_KEY = "selected_position";
-    private boolean mTwoPane = false;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
-    private String timezoneID = "";
     private static final int FORECAST_LOADER = 0;
     private static final String[] FORECAST_COLUMNS = {
             WeatherContract.WeatherEntry.TABLE_NAME + "." + WeatherContract.WeatherEntry._ID,
@@ -170,14 +168,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     void onLocationChanged() {
-        updateWeather();
         restartLoader();
-    }
-
-    private void updateWeather() {
-        //String location = Utility.getPreferredLocation(getActivity());
-        //new FetchWeatherTask(getActivity()).execute(location);
-        SunshineSyncAdapter.syncImmediately(getActivity());
     }
 
     private void openPreferredLocationInMap() {
@@ -225,7 +216,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // dates after or including today.
         String locationSetting = Utility.getPreferredLocation(getActivity());
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        timezoneID = Utility.getTimezoneID(getActivity());
+        String timezoneID = Utility.getTimezoneID(getActivity());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
@@ -245,7 +236,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (mPosition != ListView.INVALID_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
-            mListView.setItemChecked(mPosition, true);
             mListView.smoothScrollToPosition(mPosition);
         }
         updateEmptyView();
@@ -257,14 +247,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     public void setIsTwoPane(boolean isTwoPane) {
-        mTwoPane = isTwoPane;
         if (mForecastAdapter != null) {
-            mForecastAdapter.setIsTwoPane(mTwoPane);
+            mForecastAdapter.setIsTwoPane(isTwoPane);
         }
-    }
-
-    public void restartLoader() {
-        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
     private void updateEmptyView() {
@@ -305,6 +290,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
             updateWeather();
         }
+    }
+
+    public void restartLoader() {
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+    }
+
+    private void updateWeather() {
+        //String location = Utility.getPreferredLocation(getActivity());
+        //new FetchWeatherTask(getActivity()).execute(location);
+        SunshineSyncAdapter.syncImmediately(getActivity());
     }
 }
 

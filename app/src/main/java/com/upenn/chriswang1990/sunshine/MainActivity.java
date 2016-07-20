@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -78,20 +77,16 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
                 (R.id.fragment_forecast);
         if (location != null && !location.equals(mLocation)) {
 
-            if ( null != ff ) {
+            if (ff != null) {
                 ff.onLocationChanged();
             }
             DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
             if (df != null) {
-                Log.d(LOG_TAG, "onResume: df found!!");
-                DetailFragment fragment = new DetailFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG)
-                        .commit();
+                df.onLocationChanged(location);
             }
             mLocation = location;
         }
-        ff.restartLoader();
+//        ff.restartLoader();
     }
 
     @Override
