@@ -69,24 +69,22 @@ public class ForecastAdapter extends CursorAdapter {
         int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
         int viewType = getItemViewType(cursor.getPosition());
         int fallbackIconId;
-
-        if (viewType == VIEW_TYPE_TODAY) {
-            fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
-            //get and set city name in today list item view
-            String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
-            viewHolder.cityNameView.setText(cityName);
-        } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
-            fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
-        } else {
-            viewHolder.iconView.setImageResource(R.mipmap.ic_launcher);
-            fallbackIconId = R.mipmap.ic_launcher;
+        switch (viewType) {
+            case VIEW_TYPE_TODAY:
+                fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
+                //get and set city name in today list item view
+                String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
+                viewHolder.cityNameView.setText(cityName);
+                Glide.with(mContext)
+                        .load(Utility.getArtUrlForWeatherCondition(mContext, weatherID))
+                        .error(fallbackIconId)
+                        .crossFade()
+                        .into(viewHolder.iconView);
+                break;
+            case VIEW_TYPE_FUTURE_DAY:
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherID));
+                break;
         }
-
-        Glide.with(mContext)
-                .load(Utility.getArtUrlForWeatherCondition(mContext, weatherID))
-                .error(fallbackIconId)
-                .crossFade()
-                .into(viewHolder.iconView);
 
         //get date with get readable date method
         long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
