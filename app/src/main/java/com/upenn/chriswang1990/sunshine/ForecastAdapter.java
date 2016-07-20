@@ -68,12 +68,13 @@ public class ForecastAdapter extends CursorAdapter {
         ViewHolder viewHolder = (ViewHolder) view.getTag();
         int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
         int viewType = getItemViewType(cursor.getPosition());
+        String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
+
         int fallbackIconId;
         switch (viewType) {
             case VIEW_TYPE_TODAY:
                 fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
                 //get and set city name in today list item view
-                String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
                 viewHolder.cityNameView.setText(cityName);
                 Glide.with(mContext)
                         .load(Utility.getArtUrlForWeatherCondition(mContext, weatherID))
@@ -92,7 +93,7 @@ public class ForecastAdapter extends CursorAdapter {
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
         //get and set description string
-        String description = cursor.getString(ForecastFragment.COL_WEATHER_DESC);
+        String description = Utility.getStringForWeatherCondition(context, weatherID);
         viewHolder.descriptionView.setText(description);
 
         //set image description for accessibility
