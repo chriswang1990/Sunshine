@@ -151,7 +151,7 @@ public class DetailFragment extends Fragment implements LoaderManager
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if ( null != mUri ) {
+        if (null != mUri) {
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
             return new CursorLoader(
@@ -181,6 +181,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             //read city name and update
             String cityName = data.getString(COL_CITY_NAME);
             mCityNameView.setText(cityName);
+            mCityNameView.setContentDescription(getString(R.string.a11y_city_name, cityName));
 
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
@@ -188,35 +189,48 @@ public class DetailFragment extends Fragment implements LoaderManager
             String dayText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
             String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
             mDayView.setText(dayText);
+            mDayView.setContentDescription(dayText);
             mDateView.setText(dateText);
+            mDateView.setContentDescription(dateText);
 
             // Read description from cursor and update view
             String description = Utility.getStringForWeatherCondition(getActivity(), weatherID);
             mDescriptionView.setText(description);
-            mIconView.setContentDescription(description);
+            mDescriptionView.setContentDescription(getString(R.string.a11y_forecast, description));
+            // For accessibility, add a content description to the icon field. Because the ImageView
+            // is independently focusable, it's better to have a description of the image. Using
+            // null is appropriate when the image is purely decorative or when the image already
+            // has text describing it in the same UI component.
+            mIconView.setContentDescription(getString(R.string.a11y_forecast_icon, description));
 
             // Read high temperature from cursor and update view
             double high = data.getDouble(COL_WEATHER_MAX_TEMP);
             String highString = Utility.formatTemperature(getActivity(), high);
             mHighTempView.setText(highString);
+            mHighTempView.setContentDescription(getString(R.string.a11y_high_temp, highString));
 
             // Read low temperature from cursor and update view
             double low = data.getDouble(COL_WEATHER_MIN_TEMP);
             String lowString = Utility.formatTemperature(getActivity(), low);
             mLowTempView.setText(lowString);
+            mLowTempView.setContentDescription(getString(R.string.a11y_low_temp, lowString));
 
             // Read humidity from cursor and update view
             float humidity = data.getFloat(COL_WEATHER_HUMIDITY);
             mHumidityView.setText(getActivity().getString(R.string.format_humidity, humidity));
+            mHumidityView.setContentDescription(mHumidityView.getText());
 
             // Read wind speed and direction from cursor and update view
             float windSpeedStr = data.getFloat(COL_WEATHER_WIND_SPEED);
             float windDirStr = data.getFloat(COL_WEATHER_DEGREES);
             mWindView.setText(Utility.getFormattedWind(getActivity(), windSpeedStr, windDirStr));
+            mWindView.setContentDescription(mWindView.getText());
+            mWindView.setContentDescription(mWindView.getText());
 
             // Read pressure from cursor and update view
             float pressure = data.getFloat(COL_WEATHER_PRESSURE);
             mPressureView.setText(getActivity().getString(R.string.format_pressure, pressure));
+            mPressureView.setContentDescription(mPressureView.getText());
 
             forecastStr = String.format("%s - %s - %s/%s", dateText, description, highString, lowString);
             // If onCreateOptionsMenu has already happened, we need to update the share intent now.

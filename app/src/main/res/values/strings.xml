@@ -81,6 +81,13 @@
     <string name="pref_art_pack_key">art_pack</string>
     <string name="pref_art_pack_sunshine">https://raw.githubusercontent.com/udacity/Sunshine-Version-2/sunshine_master/app/src/main/res/drawable-xxhdpi/art_%s.png</string>
 
+    <!-- A11y -->
+    <string name="a11y_city_name">City name: <xliff:g id="city">%1$s</xliff:g></string>
+    <string name="a11y_forecast">Forecast: <xliff:g id="condition">%1$s</xliff:g></string>
+    <string name="a11y_forecast_icon">Forecast icon: <xliff:g id="condition">%1$s</xliff:g></string>
+    <string name="a11y_high_temp">High: <xliff:g id="high">%1$s</xliff:g></string>
+    <string name="a11y_low_temp">Low: <xliff:g id="low">%1$s</xliff:g></string>
+
     <!-- Weather Conditions -->
     <string name="condition_2xx">Storm</string>
     <string name="condition_3xx">Drizzle</string>
