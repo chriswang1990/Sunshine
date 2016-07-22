@@ -15,7 +15,6 @@ package com.upenn.chriswang1990.sunshine.data;/*
  */
 
 
-import android.annotation.TargetApi;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
@@ -125,10 +124,6 @@ public class WeatherProvider extends ContentProvider {
         return matcher;
     }
 
-    /*
-        Students: We've coded this for you.  We just create a new WeatherDbHelper for later use
-        here.
-     */
     @Override
     public boolean onCreate() {
         mOpenHelper = new WeatherDbHelper(getContext());
@@ -330,13 +325,4 @@ public class WeatherProvider extends ContentProvider {
         }
     }
 
-    // You do not need to call this method. This is a method specifically to assist the testing
-    // framework in running smoothly. You can read more at:
-    // http://developer.android.com/reference/android/content/ContentProvider.html#shutdown()
-    @Override
-    @TargetApi(11)
-    public void shutdown() {
-        mOpenHelper.close();
-        super.shutdown();
-    }
 }

@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
 /**
@@ -171,12 +170,8 @@ public class DetailFragment extends Fragment implements LoaderManager
 
         if (data != null && data.moveToFirst()) {
             // Read weather condition ID from cursor
-            int weatherID = data.getInt(COL_WEATHER_CONDITION_ID);
-
-            Glide.with(this)
-                    .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherID))
-                    .error(Utility.getArtResourceForWeatherCondition(weatherID))
-                    .into(mIconView);
+            int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
+            mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
 
             //read city name and update
             String cityName = data.getString(COL_CITY_NAME);
@@ -194,7 +189,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             mDateView.setContentDescription(dateText);
 
             // Read description from cursor and update view
-            String description = Utility.getStringForWeatherCondition(getActivity(), weatherID);
+            String description = Utility.getStringForWeatherCondition(getActivity(), weatherId);
             mDescriptionView.setText(description);
             mDescriptionView.setContentDescription(getString(R.string.a11y_forecast, description));
             // For accessibility, add a content description to the icon field. Because the ImageView

@@ -9,8 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
@@ -66,24 +64,18 @@ public class ForecastAdapter extends CursorAdapter {
     public void bindView(View view, Context context, Cursor cursor) {
 
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        int weatherID = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
+        int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
         int viewType = getItemViewType(cursor.getPosition());
         String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
 
-        int fallbackIconId;
         switch (viewType) {
             case VIEW_TYPE_TODAY:
-                fallbackIconId = Utility.getArtResourceForWeatherCondition(weatherID);
+                viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
                 //get and set city name in today list item view
                 viewHolder.cityNameView.setText(cityName);
-                Glide.with(mContext)
-                        .load(Utility.getArtUrlForWeatherCondition(mContext, weatherID))
-                        .error(fallbackIconId)
-                        .crossFade()
-                        .into(viewHolder.iconView);
                 break;
-            case VIEW_TYPE_FUTURE_DAY:
-                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherID));
+            default:
+                viewHolder.iconView.setImageResource(Utility.getIconResourceForWeatherCondition(weatherId));
                 break;
         }
 
@@ -93,7 +85,7 @@ public class ForecastAdapter extends CursorAdapter {
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
         //get and set description string
-        String description = Utility.getStringForWeatherCondition(context, weatherID);
+        String description = Utility.getStringForWeatherCondition(context, weatherId);
         viewHolder.descriptionView.setText(description);
         viewHolder.descriptionView.setContentDescription(context.getString(R.string.a11y_forecast, description));
 
