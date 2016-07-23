@@ -139,13 +139,12 @@ public class DetailFragment extends Fragment implements LoaderManager
         super.onActivityCreated(savedInstanceState);
     }
 
-    void onLocationChanged(String newLocation) {
+    void onLocationChanged() {
         // replace the uri, since the location has changed
-        if (null != mUri) {
-            long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
-            mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
-            getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
-        }
+        long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
+        String newLocation = Utility.getPreferredLocation(getActivity());
+        mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+        getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
     }
 
     @Override
