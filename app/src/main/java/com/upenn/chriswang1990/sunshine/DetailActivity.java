@@ -18,7 +18,6 @@ public class DetailActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         //show the back button on toolbar
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
             arguments.putParcelable(DetailFragment.DETAIL_URI, getIntent().getData());
