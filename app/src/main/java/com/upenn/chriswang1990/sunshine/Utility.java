@@ -113,6 +113,24 @@ public class Utility {
         return dayTimeFormat.format(date);
     }
 
+    /**
+     * Helper method to convert the database representation of the date into something to display
+     * to users.  As classy and polished a user experience as "20140102" is, we can do better.
+     *
+     * @param context Context to use for resource localization
+     * @param unixTimestamp The date in unixTimestamp format
+     * @return a user-friendly representation of the date.
+     */
+    public static String getFullFriendlyDayString(Context context, long unixTimestamp, String timezoneID) {
+        String dayText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
+        String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
+        int formatId = R.string.format_full_friendly_date;
+        return String.format(context.getString(
+                formatId,
+                dayText,
+                dateText));
+    }
+
     public static long normalizeDate (long unixTimestamp, String timezoneID) {
         long timeInMilliseconds = unixTimestamp * 1000;
         Date date = new Date(timeInMilliseconds);
