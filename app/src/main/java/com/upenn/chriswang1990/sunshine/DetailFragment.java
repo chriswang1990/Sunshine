@@ -92,6 +92,8 @@ public class DetailFragment extends Fragment implements LoaderManager
         Bundle arguments = getArguments();
         if (arguments != null) {
             mUri = arguments.getParcelable(DetailFragment.DETAIL_URI);
+        } else {
+            mUri = getDefaultUri();
         }
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -145,9 +147,7 @@ public class DetailFragment extends Fragment implements LoaderManager
 
     void onLocationChanged() {
         // replace the uri, since the location has changed
-        long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
-        String newLocation = Utility.getPreferredLocation(getActivity());
-        mUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
+        mUri = getDefaultUri();
         getLoaderManager().restartLoader(DETAIL_LOADER, null, this);
     }
 
@@ -260,5 +260,11 @@ public class DetailFragment extends Fragment implements LoaderManager
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+    }
+
+    private Uri getDefaultUri() {
+        long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
+        String newLocation = Utility.getPreferredLocation(getActivity());
+        return WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);
     }
 }
