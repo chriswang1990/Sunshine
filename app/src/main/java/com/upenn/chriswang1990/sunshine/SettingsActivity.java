@@ -14,6 +14,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
@@ -26,7 +28,7 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends Activity {
-
+    protected final static int PLACE_PICKER_REQUEST = 9090;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,6 +146,26 @@ public class SettingsActivity extends Activity {
                 // our location status has changed.  Update the summary accordingly
                 Preference locationPreference = findPreference(getString(R.string.pref_location_key));
                 bindPreferenceSummaryToValue(locationPreference);
+            }
+        }
+
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+            // Check to see if the result is from our Place Picker intent
+            if (requestCode == PLACE_PICKER_REQUEST) {
+                // Make sure the request was successful
+                if (resultCode == RESULT_OK) {
+                    Place place = PlacePicker.getPlace(getActivity(), data);
+                    String address = place.getAddress().toString();
+
+                    SharedPreferences sharedPreferences =
+                            PreferenceManager.getDefaultSharedPreferences(getActivity());
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(getString(R.string.pref_location_key), address);
+                    editor.commit();
+                }
+            } else {
+                super.onActivityResult(requestCode, resultCode, data);
             }
         }
     }
