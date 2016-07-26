@@ -34,10 +34,10 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             // adding or replacing the detail fragment using a
             // fragment transaction.
             if (savedInstanceState == null) {
+                DetailFragment detailFragment = new DetailFragment();
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .replace(R.id.weather_detail_container, detailFragment, DETAILFRAGMENT_TAG)
                         .commit();
-
             }
         } else {
             mTwoPane = false;
