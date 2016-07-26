@@ -221,7 +221,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
         Log.d("ForecastFragment", "weatherURI: " + weatherForLocationUri.toString());
-        //Log.d("test start date URI", "onCreateLoader: " + weatherForLocationUri);
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,
                 FORECAST_COLUMNS,

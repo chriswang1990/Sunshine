@@ -106,7 +106,7 @@ public class DetailFragment extends Fragment implements LoaderManager
         mWindLabelView = (TextView) rootView.findViewById(R.id.detail_wind_label_textview);
         mPressureView = (TextView) rootView.findViewById(R.id.detail_pressure_textview);
         mPressureLabelView = (TextView) rootView.findViewById(R.id.detail_pressure_label_textview);
-//        mCityNameView = (TextView) rootView.findViewById(R.id.detail_city_name);
+        mCityNameView = (TextView) rootView.findViewById(R.id.detail_city_name);
         return rootView;
     }
 
@@ -178,8 +178,8 @@ public class DetailFragment extends Fragment implements LoaderManager
 
             //read city name and update
             String cityName = data.getString(COL_CITY_NAME);
-//            mCityNameView.setText(cityName);
-//            mCityNameView.setContentDescription(getString(R.string.a11y_city_name, cityName));
+            mCityNameView.setText(cityName);
+            mCityNameView.setContentDescription(getString(R.string.a11y_city_name, cityName));
 
             // Read date from cursor and update views for day of week and date
             long unixTimestamp = data.getLong(COL_WEATHER_DATE_UNIX);
@@ -228,7 +228,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             mPressureView.setContentDescription(getString(R.string.a11y_pressure, mPressureView.getText()));
             mPressureLabelView.setContentDescription(mPressureView.getContentDescription());
 
-            forecastStr = String.format("%s - %s - %s/%s", dateText, description, highString, lowString);
+            forecastStr = String.format("%s - %s - %s - %s/%s", cityName, dateText, description, highString, lowString);
 
             // If onCreateOptionsMenu has already happened, we need to update the share intent now.
             if (mShareActionProvider != null) {
@@ -244,7 +244,6 @@ public class DetailFragment extends Fragment implements LoaderManager
 
                 if ( null != toolbarView ) {
                     activity.setSupportActionBar(toolbarView);
-
                     activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
                     activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 }

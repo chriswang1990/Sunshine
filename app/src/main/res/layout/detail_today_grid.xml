@@ -12,10 +12,22 @@
         app:layout_columnWeight="1"
         app:layout_rowWeight="1" />
 
+    <!-- city name -->
+    <TextView
+        android:id="@+id/detail_city_name"
+        android:layout_marginTop="@dimen/abc_list_item_padding_horizontal_material"
+        android:layout_marginLeft="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+        android:textColor="@color/primary_text"
+        android:textStyle="bold"
+        app:layout_gravity="fill_horizontal"
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1"
+        tools:text="Sunnyvale"/>
+
     <TextView
         android:id="@+id/detail_date_textview"
         android:layout_marginBottom="@dimen/abc_list_item_padding_horizontal_material"
-        android:layout_marginTop="@dimen/abc_list_item_padding_horizontal_material"
         android:fontFamily="sans-serif"
         android:gravity="center_horizontal"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
