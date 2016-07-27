@@ -1,5 +1,5 @@
-package com.upenn.chriswang1990.sunshine.data;/*
- * Copyright (C) 2014 The Android Open Source Project
+/*
+ * Copyright (C) 2016 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@ package com.upenn.chriswang1990.sunshine.data;/*
  * limitations under the License.
  */
 
+package com.upenn.chriswang1990.sunshine.data;
 
 import android.net.Uri;
 import android.test.AndroidTestCase;
