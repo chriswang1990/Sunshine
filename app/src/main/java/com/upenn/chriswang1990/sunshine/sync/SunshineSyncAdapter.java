@@ -89,17 +89,21 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
-
+        // We no longer need just the location String, but also potentially the latitude and
+        // longitude, in case we are syncing based on a new Place Picker API result.
+        Context context = getContext();
+        String locationQuery = Utility.getPreferredLocation(context);
+        String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
+        String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
         //refreshing last sync time
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
-        String lastDataSyncKey = getContext().getString(R.string.pref_last_data_sync);
+        String lastDataSyncKey = context.getString(R.string.pref_last_data_sync);
         editor.putLong(lastDataSyncKey, System.currentTimeMillis());
         editor.apply();
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
-        String locationQuery = Utility.getPreferredLocation(getContext());
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
 
@@ -117,13 +121,27 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             weatherAPIBuilder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
                     ("2.5").appendPath("forecast").appendPath("daily");
             final String QUERY_PARAM = "q";
+            final String LAT_PARAM = "lat";
+            final String LON_PARAM = "lon";
             final String FORMAT_PARAM = "mode";
             final String UNITS_PARAM = "units";
             final String DAYS_PARAM = "cnt";
             final String APPID_PARAM = "APPID";
 
-            weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, locationQuery)
-                    .appendQueryParameter(FORMAT_PARAM, format)
+            // Instead of always building the query based off of the location string, we want to
+            // potentially build a query using a lat/lon value. This will be the case when we are
+            // syncing based off of a new location from the Place Picker API. So we need to check
+            // if we have a lat/lon to work with, and use those when we do. Otherwise, the weather
+            // service may not understand the location address provided by the Place Picker API
+            // and the user could end up with no weather! The horror!
+            if (Utility.isLocationLatLonAvailable(context)) {
+                weatherAPIBuilder.appendQueryParameter(LAT_PARAM, locationLatitude)
+                        .appendQueryParameter(LON_PARAM, locationLongitude);
+            } else {
+                weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, locationQuery);
+            }
+
+            weatherAPIBuilder.appendQueryParameter(FORMAT_PARAM, format)
                     .appendQueryParameter(UNITS_PARAM, units)
                     .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
                     .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
@@ -155,7 +173,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             if (stringBuilder.length() == 0) {
-                setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+                setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
                 return;
             }
             forecastJsonStr = stringBuilder.toString();
@@ -165,11 +183,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, "Error ", e);
             // If the code didn't successfully get the weather data, there's no point in attempting
             // to parse it.
-            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
-            setLocationStatus(getContext(), LOCATION_STATUS_SERVER_INVALID);
+            setLocationStatus(context, LOCATION_STATUS_SERVER_INVALID);
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -232,6 +250,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         final String OWN_MESSAGE_CODE = "cod";
 
+        Context context = getContext();
         try {
             JSONObject forecastJson = new JSONObject(forecastJsonStr);
 
@@ -243,10 +262,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     case HttpURLConnection.HTTP_OK:
                         break;
                     case HttpURLConnection.HTTP_NOT_FOUND:
-                        setLocationStatus(getContext(), LOCATION_STATUS_INVALID);
+                        setLocationStatus(context, LOCATION_STATUS_INVALID);
                         return;
                     default:
-                        setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
+                        setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
                         return;
                 }
             }
@@ -333,9 +352,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             if (cVVector.size() > 0) {
                 ContentValues[] values = new ContentValues[cVVector.size()];
                 cVVector.toArray(values);
-                getContext().getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
+                context.getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
                         values);
-                rowsDeleted = getContext().getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                rowsDeleted = context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
                         WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
                         new String[]{Long.toString(Utility.normalizeDate(System.currentTimeMillis()
                                 / 1000, mTimezoneID) - 1)});
@@ -343,7 +362,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
             Log.d(LOG_TAG, "getWeatherDataFromJson: deleted " + rowsDeleted + " rows");
-            setLocationStatus(getContext(), LOCATION_STATUS_OK);
+            setLocationStatus(context, LOCATION_STATUS_OK);
 
         } catch (JSONException e) {
             Log.e(LOG_TAG, e.getMessage(), e);
@@ -460,8 +479,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.
                     NotificationCompat.Builder mBuilder =
-                            new NotificationCompat.Builder(getContext())
-                                    .setColor(R.color.primary_light)
+                            new NotificationCompat.Builder(context)
+                                    .setColor(context.getResources().getColor(R.color.primary_light))
                                     .setSmallIcon(iconId)
                                     .setLargeIcon(largeIcon)
                                     .setContentTitle(title)

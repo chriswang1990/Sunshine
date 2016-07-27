@@ -4,7 +4,6 @@
     <string name="action_map">地图位置</string>
     <string name="action_refresh">刷新</string>
     <string name="action_settings">设置</string>
-    <string name="action_share_label">分享天气</string>
     <string name="empty_forecast_list">天气数据不可用，请等待或尝试刷新</string>
     <string name="empty_forecast_list_invalid_location">天气数据不可用，服务器无法识别输入的地址</string>
     <string name="empty_forecast_list_no_network">天气数据不可用，没有可用的网络连接</string>
@@ -20,4 +19,6 @@
     <string name="pref_location_unknown_description">地点识别中... (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_units_label">单位制</string>
     <string name="title_activity_detail">天气详情</string>
+    <string name="action_share_label"></string>
+    <string name="action_share">分享天气</string>
 </resources>
