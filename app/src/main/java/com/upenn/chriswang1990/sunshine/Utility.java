@@ -7,6 +7,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
@@ -519,5 +521,15 @@ public class Utility {
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
         spe.apply();
+    }
+
+    /**
+     * Check to see if Google Play services is available. The Place Picker API is available
+     * through Google Play services
+     */
+    public static boolean isGooglePlayServiceAvailable(Context context) {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(context);
+        return resultCode == ConnectionResult.SUCCESS;
     }
 }
