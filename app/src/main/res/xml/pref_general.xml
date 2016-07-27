@@ -15,6 +15,7 @@
     xmlns:custom="http://schemas.android.com/apk/res/com.upenn.chriswang1990.sunshine"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <com.upenn.chriswang1990.sunshine.LocationEditTextPreference
         android:defaultValue="@string/pref_location_default"
         android:inputType="text"
@@ -22,16 +23,19 @@
         android:singleLine="true"
         android:title="@string/pref_location_label"
         custom:minLength="3" />
+
     <ListPreference
         android:defaultValue="@string/pref_units_default"
         android:entries="@array/pref_units_options"
         android:entryValues="@array/pref_units_values"
         android:key="@string/pref_units_key"
         android:title="@string/pref_units_label" />
+
     <CheckBoxPreference
         android:defaultValue="@string/pref_enable_notifications_default"
         android:key="@string/pref_enable_notifications_key"
         android:summaryOff="@string/pref_enable_notifications_false"
         android:summaryOn="@string/pref_enable_notifications_true"
         android:title="@string/pref_enable_notifications_label" />
+
 </PreferenceScreen>

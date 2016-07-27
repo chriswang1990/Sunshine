@@ -17,7 +17,6 @@
 package com.upenn.chriswang1990.sunshine;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
@@ -30,12 +29,16 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.model.LatLng;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
+
+import java.util.Locale;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -45,9 +48,10 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends Activity {
+public class SettingsActivity extends PreferenceActivity {
     protected final static int PLACE_PICKER_REQUEST = 9090;
     PrefsFragment mPrefsFragment;
+    public static ImageView mAttribution;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,6 +63,13 @@ public class SettingsActivity extends Activity {
         mPrefsFragment = new PrefsFragment();
         mFragmentTransaction.replace(android.R.id.content, mPrefsFragment);
         mFragmentTransaction.commit();
+
+        mAttribution = new ImageView(this);
+        mAttribution.setImageResource(R.drawable.powered_by_google_light);
+        if (!Utility.isLocationLatLonAvailable(this)) {
+            mAttribution.setVisibility(View.GONE);
+        }
+        this.setListFooter(mAttribution);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -68,7 +79,6 @@ public class SettingsActivity extends Activity {
     }
 
     public static class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener{
-
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -77,6 +87,7 @@ public class SettingsActivity extends Activity {
             addPreferencesFromResource(R.xml.pref_general);
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_units_key)));
+
         }
 
         @Override
@@ -161,6 +172,10 @@ public class SettingsActivity extends Activity {
                 editor.remove(getString(R.string.pref_location_latitude));
                 editor.remove(getString(R.string.pref_location_longitude));
                 editor.commit();
+
+                // Remove attributions for our any PlacePicker locations.
+                mAttribution.setVisibility(View.GONE);
+
                 // Clear the location status
                 Utility.resetLocationStatus(getActivity());
                 SunshineSyncAdapter.syncImmediately(getActivity());
@@ -187,7 +202,7 @@ public class SettingsActivity extends Activity {
                 // If the provided place doesn't have an address, we'll form a display-friendly
                 // string from the latlng values.
                 if (TextUtils.isEmpty(address)) {
-                    address = String.format("(%.2f, %.2f)",latLong.latitude, latLong.longitude);
+                    address = String.format(Locale.US, "(%.2f, %.2f)",latLong.latitude, latLong.longitude);
                 }
                 SharedPreferences sharedPreferences =
                         PreferenceManager.getDefaultSharedPreferences(this);
@@ -208,6 +223,7 @@ public class SettingsActivity extends Activity {
                 // LocationEditTextPreference to handle these changes and invoke our callbacks.
                 Preference locationPreference = mPrefsFragment.findPreference(getString(R.string.pref_location_key));
                 mPrefsFragment.setPreferenceSummary(locationPreference, address);
+                mAttribution.setVisibility(View.VISIBLE);
                 Utility.resetLocationStatus(this);
                 SunshineSyncAdapter.syncImmediately(this);
             }
