@@ -39,17 +39,4 @@ public class DetailActivity extends AppCompatActivity {
                     add(R.id.weather_detail_container, fragment, DETAILFRAGMENT_TAG).commit();
         }
     }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        String location = Utility.getPreferredLocation( this );
-        if (location != null && location != mLocation) {
-            DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-            if (df != null) {
-                df.onLocationChanged();
-            }
-            mLocation = location;
-        }
-    }
 }

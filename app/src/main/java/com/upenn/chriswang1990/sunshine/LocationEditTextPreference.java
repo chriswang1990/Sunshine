@@ -73,7 +73,6 @@ public class LocationEditTextPreference extends EditTextPreference {
                     // return the result to SettingsActivity.
                     PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
 
-
                     // We are in a view right now, not an activity. So we need to get ourselves
                     // an activity that we can use to start our Place Picker intent. By using
                     // SettingsActivity in this way, we can ensure the result of the Place Picker
@@ -86,14 +85,6 @@ public class LocationEditTextPreference extends EditTextPreference {
 
                     } catch (GooglePlayServicesNotAvailableException
                             | GooglePlayServicesRepairableException e) {
-                        // What did you do?? This is why we check Google Play services in onResume!!!
-                        // The difference in these exception types is the difference between pausing
-                        // for a moment to prompt the user to update/install/enable Play services vs
-                        // complete and utter failure.
-                        // If you prefer to manage Google Play services dynamically, then you can do so
-                        // by responding to these exceptions in the right moment. But I prefer a cleaner
-                        // user experience, which is why you check all of this when the app resumes,
-                        // and then disable/enable features based on that availability.
                     }
                 }
             });

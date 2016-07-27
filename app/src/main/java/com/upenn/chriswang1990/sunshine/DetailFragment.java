@@ -244,7 +244,7 @@ public class DetailFragment extends Fragment implements LoaderManager
             mPressureView.setContentDescription(getString(R.string.a11y_pressure, mPressureView.getText()));
             mPressureLabelView.setContentDescription(mPressureView.getContentDescription());
 
-            forecastStr = String.format("%s - %s - %s - %s/%s", cityName, dateText, description, highString, lowString);
+            forecastStr = String.format(getContext().getString(R.string.format_share_string), cityName, dateText, description, highString, lowString);
 
             // If onCreateOptionsMenu has already happened, we need to update the share intent now.
             if (mShareActionProvider != null) {
@@ -278,7 +278,7 @@ public class DetailFragment extends Fragment implements LoaderManager
     public void onLoaderReset(Loader<Cursor> loader) {
     }
 
-    private Uri getDefaultUri() {
+    public Uri getDefaultUri() {
         long date = Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(getActivity()));
         String newLocation = Utility.getPreferredLocation(getActivity());
         return WeatherContract.WeatherEntry.buildWeatherLocationWithDate(newLocation, date);

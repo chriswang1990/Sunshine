@@ -22,6 +22,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -114,8 +115,6 @@ public class Utility {
         try {
             String dateStr = Long.toString(normalizeDate(unixTimestamp, timezoneID));
             String todayStr = Long.toString(normalizeDate(System.currentTimeMillis() / 1000, timezoneID));
-
-            //Log.d("date debug", "getReadableDateString: " + todayStr + " " + dateStr + " " + timezoneID);
             date = compareFormat.parse(dateStr);
             todayDate = compareFormat.parse(todayStr);
             long dayDiff = (date.getTime() - todayDate.getTime()) / MILLISECONDS_IN_DAY;
@@ -547,5 +546,10 @@ public class Utility {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         int resultCode = apiAvailability.isGooglePlayServicesAvailable(context);
         return resultCode == ConnectionResult.SUCCESS;
+    }
+
+    public static void showAsToast(Context context, String text) {
+        int duration = Toast.LENGTH_LONG;
+        Toast.makeText(context,text, duration).show();
     }
 }

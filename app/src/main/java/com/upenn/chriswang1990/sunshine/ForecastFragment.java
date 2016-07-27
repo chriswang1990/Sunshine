@@ -16,6 +16,7 @@
 
 package com.upenn.chriswang1990.sunshine;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -27,7 +28,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -205,7 +205,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
                     startActivity(intent);
                 } else {
-                    Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
+                    Context context = getContext();
+                    String warning = "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!";
+                    Utility.showAsToast(context, warning);
                 }
             }
 
@@ -236,7 +238,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
-        Log.d("ForecastFragment", "weatherURI: " + weatherForLocationUri.toString());
+//        Log.d("ForecastFragment", "weatherURI: " + weatherForLocationUri.toString());
         return new CursorLoader(getActivity(),
                 weatherForLocationUri,
                 FORECAST_COLUMNS,
@@ -300,13 +302,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    public void initializeData() {
-        long lastDataSync = Utility.getLastDataSync(getActivity());
-        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
-            updateWeather();
-        }
-    }
-
     public void restartLoader() {
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
@@ -315,6 +310,13 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         //String location = Utility.getPreferredLocation(getActivity());
         //new FetchWeatherTask(getActivity()).execute(location);
         SunshineSyncAdapter.syncImmediately(getActivity());
+    }
+
+    public void initializeData() {
+        long lastDataSync = Utility.getLastDataSync(getActivity());
+        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
+            updateWeather();
+        }
     }
 }
 
