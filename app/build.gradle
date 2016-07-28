@@ -1,22 +1,22 @@
 apply plugin: 'com.android.application'
 
-// Create a variable called keystorePropertiesFile, and initialize it to your
+// Create a variable called keysPropertiesFile, and initialize it to your
 // keystore.properties file
-def keystorePropertiesFile = rootProject.file("app/keystore.properties")
+def keysPropertiesFile = rootProject.file("app/keys.properties")
 
-// Initialize a new Properties() object called keystoreProperties.
-def keystoreProperties = new Properties()
+// Initialize a new Properties() object called keysProperties.
+def keysProperties = new Properties()
 
-// Load your keystore.properties file into the keystoreProperties object.
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+// Load your keystore.properties file into the keysProperties object.
+keysProperties.load(new FileInputStream(keysPropertiesFile))
 
 android {
     signingConfigs {
         config {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            keyAlias keysProperties['keyAlias']
+            keyPassword keysProperties['keyPassword']
+            storeFile file(keysProperties['storeFile'])
+            storePassword keysProperties['storePassword']
         }
     }
     compileSdkVersion 24
@@ -36,9 +36,9 @@ android {
     }
     buildTypes.each {
         it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY',
-                keystoreProperties['weatherAPIKey']
+                keysProperties['weatherAPIKey']
         it.buildConfigField 'String', 'GOOGLE_ANDROID_API_KEY',
-                keystoreProperties['timezoneAPIKey']
+                keysProperties['timezoneAPIKey']
     }
 }
 
