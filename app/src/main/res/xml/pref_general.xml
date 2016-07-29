@@ -31,7 +31,7 @@
         android:key="@string/pref_units_key"
         android:title="@string/pref_units_label" />
 
-    <CheckBoxPreference
+    <SwitchPreference
         android:defaultValue="@string/pref_enable_notifications_default"
         android:key="@string/pref_enable_notifications_key"
         android:summaryOff="@string/pref_enable_notifications_false"
