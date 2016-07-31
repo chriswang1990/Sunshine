@@ -1,27 +1,44 @@
 apply plugin: 'com.android.application'
 
+// Create a variable called keysPropertiesFile, and initialize it to your
+// keystore.properties file
+def keysPropertiesFile = rootProject.file("app/keys.properties")
+
+// Initialize a new Properties() object called keysProperties.
+def keysProperties = new Properties()
+
+// Load your keystore.properties file into the keysProperties object.
+keysProperties.load(new FileInputStream(keysPropertiesFile))
+
 android {
+    signingConfigs {
+        config {
+            keyAlias keysProperties['keyAlias']
+            keyPassword keysProperties['keyPassword']
+            storeFile file(keysProperties['storeFile'])
+            storePassword keysProperties['storePassword']
+        }
+    }
     compileSdkVersion 24
     buildToolsVersion "24.0.0"
-
     defaultConfig {
         applicationId "com.upenn.chriswang1990.sunshine"
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 5
+        versionName "2.1.0"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     buildTypes.each {
         it.buildConfigField 'String', 'OPEN_WEATHER_MAP_API_KEY',
-                '\"242cf38d38fa38edb3ef2574a8f5ed56\"'
+                keysProperties['weatherAPIKey']
         it.buildConfigField 'String', 'GOOGLE_ANDROID_API_KEY',
-        '\"AIzaSyCINEwF6KcBtHdvAFPqWT4Z6hm3SJFdnj4\"'
+                keysProperties['timezoneAPIKey']
     }
 }
 

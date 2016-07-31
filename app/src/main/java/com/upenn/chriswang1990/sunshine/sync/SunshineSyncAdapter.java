@@ -77,7 +77,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
             WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
             WeatherContract.WeatherEntry.COLUMN_MIN_TEMP,
-            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.LocationEntry.COLUMN_CITY_NAME
     };
 
     // these indices must match the projection
@@ -85,6 +86,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int INDEX_MAX_TEMP = 1;
     private static final int INDEX_MIN_TEMP = 2;
     private static final int INDEX_SHORT_DESC = 3;
+    private static final int INDEX_CITY_NAME = 4;
 
     //Location status annotation
     @Retention(RetentionPolicy.SOURCE)
@@ -104,7 +106,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(LOG_TAG, "Starting sync");
         // We no longer need just the location String, but also potentially the latitude and
         // longitude, in case we are syncing based on a new Place Picker API result.
         Context context = getContext();
@@ -164,7 +165,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     .build();
 
             URL weatherAPIUrl = new URL(weatherAPIBuilder.toString());
-            Log.d(LOG_TAG, weatherAPIUrl.toString());
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) weatherAPIUrl.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -376,8 +376,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                                 / 1000, mTimezoneID) - 1)});
                 notifyWeather();
             }
-            Log.d(LOG_TAG, "Sync Complete. " + cVVector.size() + " Inserted");
-            Log.d(LOG_TAG, "getWeatherDataFromJson: deleted " + rowsDeleted + " rows");
             setLocationStatus(context, LOCATION_STATUS_OK);
 
         } catch (JSONException e) {
@@ -475,6 +473,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 Cursor cursor = context.getContentResolver().query(weatherUri, NOTIFY_WEATHER_PROJECTION, null, null, null);
 
                 if (cursor.moveToFirst()) {
+                    String cityName = cursor.getString(INDEX_CITY_NAME);
                     int weatherId = cursor.getInt(INDEX_WEATHER_ID);
                     double high = cursor.getDouble(INDEX_MAX_TEMP);
                     double low = cursor.getDouble(INDEX_MIN_TEMP);
@@ -488,6 +487,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                     // Define the text of the forecast.
                     String contentText = String.format(context.getString(R.string.format_notification),
+                            cityName,
                             desc,
                             Utility.formatTemperature(context, high),
                             Utility.formatTemperature(context, low));

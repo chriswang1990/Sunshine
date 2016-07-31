@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:src="@drawable/ic_current_location"
         android:contentDescription="@string/pref_current_location_desc"
-        android:layout_gravity="end|center_vertical"
+        android:layout_gravity="center_horizontal|center_vertical"
         android:tint="@color/material_deep_teal_500"/>
 
 </FrameLayout>

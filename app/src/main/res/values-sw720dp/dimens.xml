@@ -13,7 +13,7 @@
  -->
 <resources>
     <!-- Extra List Item Margin (tablet-only) -->
-    <dimen name="list_item_extra_padding">64dp</dimen>
+    <dimen name="list_item_extra_padding">32dp</dimen>
     <dimen name="detail_view_padding_vertical">@dimen/abc_list_item_padding_horizontal_material</dimen>
     <dimen name="detail_view_padding">@dimen/abc_action_bar_default_height_material</dimen>
 
