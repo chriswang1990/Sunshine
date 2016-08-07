@@ -43,17 +43,6 @@ public class WeatherContract {
     public static final String PATH_WEATHER = "weather";
     public static final String PATH_LOCATION = "location";
 
-    // To make it easy to query for the exact date, we normalize all dates that go into
-    // the database to the start of the the Julian day at UTC.
-//    public static long normalizeDate(long startDate) {
-//        // normalize the start date to the beginning of the (UTC) day
-//        Calendar calendar = Calendar.getInstance();
-//        calendar.setTimeInMillis(startDate);
-//        TimeZone timeZone = TimeZone.getTimeZone("UTC");
-//        calendar.setTimeZone(timeZone);
-//        return calendar.getTimeInMillis();
-//    }
-
     /* Inner class that defines the table contents of the location table */
     public static final class LocationEntry implements BaseColumns {
 

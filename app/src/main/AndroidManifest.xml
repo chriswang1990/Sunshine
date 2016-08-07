@@ -26,7 +26,6 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -47,7 +46,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.upenn.chriswang1990.sunshine.MainActivity" />
         </activity>
-
         <provider
             android:authorities="@string/content_authority"
             android:name=".data.WeatherProvider"
@@ -67,8 +65,7 @@
         <!-- The SyncAdapter service -->
         <service
             android:name=".sync.SunshineSyncService"
-            android:exported="true"
-            >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>

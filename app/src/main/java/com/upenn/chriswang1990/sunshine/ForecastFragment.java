@@ -128,10 +128,10 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
             return true;
         }
-        if (id == R.id.action_map) {
-            openPreferredLocationInMap();
-            return true;
-        }
+//        if (id == R.id.action_map) {
+//            openPreferredLocationInMap();
+//            return true;
+//        }
         return super.onOptionsItemSelected(item);
     }
 
