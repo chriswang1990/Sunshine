@@ -26,7 +26,7 @@ import android.view.MenuItem;
 
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback{
+public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";

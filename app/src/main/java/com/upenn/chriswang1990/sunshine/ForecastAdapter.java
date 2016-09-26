@@ -18,40 +18,92 @@ package com.upenn.chriswang1990.sunshine;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.widget.CursorAdapter;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.upenn.chriswang1990.sunshine.data.WeatherContract;
+
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
  * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
  */
-public class ForecastAdapter extends CursorAdapter {
+public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHolder> {
 
     private static final int VIEW_TYPE_TODAY = 0;
     private static final int VIEW_TYPE_FUTURE_DAY = 1;
-    private static final int VIEW_TYPE_COUNT = 2;
     private boolean mTwoPane = false;
+    CursorAdapter mCursorAdapter;
+    Context mContext;
 
-    public ForecastAdapter(Context context, Cursor c, int flags) {
-        super(context, c, flags);
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface UriCallback {
+        /**
+         * DetailFragment Callback for when an item has been selected.
+         */
+        void onItemSelected(Uri dateUri);
+    }
+
+    public interface PositionCallback {
+        /**
+         * DetailFragment Callback for when an item has been selected.
+         */
+        void onItemSelected(int pos);
+    }
+
+    public ForecastAdapter(Context context, Cursor c) {
+        mContext = context;
+        mCursorAdapter = new CursorAdapter(mContext, c, 0) {
+
+            @Override
+            public View newView(Context context, Cursor cursor, ViewGroup parent) {
+                return null;
+            }
+
+            @Override
+            public void bindView(View view, Context context, Cursor cursor) {
+            }
+
+            @Override
+            public Cursor swapCursor(Cursor newCursor) {
+                Cursor oldCursor = super.swapCursor(newCursor);
+                notifyDataSetChanged();
+                return oldCursor;
+            }
+        };
     }
 
     /**
      * Cache of the children views for a forecast list item.
      */
-    public static class ViewHolder {
-        public final ImageView iconView;
-        public final TextView dateView;
-        public final TextView descriptionView;
-        public final TextView highTempView;
-        public final TextView lowTempView;
-        public final TextView cityNameView;
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        private final ImageView iconView;
+        private final TextView dateView;
+        private final TextView descriptionView;
+        private final TextView highTempView;
+        private final TextView lowTempView;
+        private final TextView cityNameView;
+        private int normalizedDate;
+
+        @Override
+        public void onClick(View view) {
+            String locationSetting = Utility.getPreferredLocation(mContext);
+            ((UriCallback) mContext).onItemSelected(WeatherContract.WeatherEntry.
+                    buildWeatherLocationWithDate(locationSetting, normalizedDate));
+            ((PositionCallback) mContext).onItemSelected(getAdapterPosition());
+        }
 
         public ViewHolder(View view) {
+            super(view);
             iconView = (ImageView) view.findViewById(R.id.list_item_icon);
             dateView = (TextView) view.findViewById(R.id.list_item_date_textview);
             descriptionView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
@@ -61,29 +113,37 @@ public class ForecastAdapter extends CursorAdapter {
         }
     }
 
+    public void setIsTwoPane(boolean isTwoPane) {
+        mTwoPane = isTwoPane;
+    }
+
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        int viewType = getItemViewType(cursor.getPosition());
-        int layoutId = -1;
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        Cursor cursor = mCursorAdapter.getCursor();
+        int pos = cursor.getPosition();
+        viewType = getItemViewType(pos + 1);
+        int layoutId;
         if (viewType == VIEW_TYPE_TODAY) {
             layoutId = R.layout.list_item_forecast_today;
         } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
             layoutId = R.layout.list_item_forecast;
+        } else {
+            layoutId = R.layout.list_item_forecast;
         }
-        View view = LayoutInflater.from(context).inflate(layoutId, parent, false);
+        View view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
         ViewHolder viewHolder = new ViewHolder(view);
-        view.setTag(viewHolder);
-        return view;
+        return viewHolder;
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
+    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+        Cursor cursor = mCursorAdapter.getCursor();
+        cursor.moveToPosition(position);
+        viewHolder.normalizedDate = cursor.getInt(ForecastFragment.COL_WEATHER_DATE);
         int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
-        int viewType = getItemViewType(cursor.getPosition());
+        int currentPos = cursor.getPosition();
+        int viewType = getItemViewType(currentPos);
         String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
-
         switch (viewType) {
             case VIEW_TYPE_TODAY:
                 viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
@@ -101,36 +161,33 @@ public class ForecastAdapter extends CursorAdapter {
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
         //get and set description string
-        String description = Utility.getStringForWeatherCondition(context, weatherId);
+        String description = Utility.getStringForWeatherCondition(mContext, weatherId);
         viewHolder.descriptionView.setText(description);
-        viewHolder.descriptionView.setContentDescription(context.getString(R.string.a11y_forecast, description));
+        viewHolder.descriptionView.setContentDescription(mContext.getString(R.string.a11y_forecast, description));
 
         //set image description for accessibility
         viewHolder.iconView.setContentDescription(description);
 
         // Read high temperature from cursor
         String high = Utility.formatTemperature(
-                context, cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP));
+                mContext, cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP));
         viewHolder.highTempView.setText(high);
-        viewHolder.highTempView.setContentDescription(context.getString(R.string.a11y_high_temp, high));
+        viewHolder.highTempView.setContentDescription(mContext.getString(R.string.a11y_high_temp, high));
 
         String low = Utility.formatTemperature(
-                context, cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP));
+                mContext, cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP));
         viewHolder.lowTempView.setText(low);
-        viewHolder.lowTempView.setContentDescription(context.getString(R.string.a11y_low_temp, low));
+        viewHolder.lowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, low));
     }
 
-    public void setIsTwoPane(boolean isTwoPane) {
-        mTwoPane = isTwoPane;
+    @Override
+    public int getItemCount() {
+        return mCursorAdapter.getCount();
     }
 
     @Override
     public int getItemViewType(int position) {
-        return (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
-    }
-
-    @Override
-    public int getViewTypeCount() {
-        return VIEW_TYPE_COUNT;
+        int viewType = (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
+        return viewType;
     }
 }

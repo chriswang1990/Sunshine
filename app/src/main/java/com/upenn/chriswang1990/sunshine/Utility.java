@@ -166,10 +166,7 @@ public class Utility {
         String dayText = Utility.getWeekTimeFormat(unixTimestamp, timezoneID);
         String dateText = Utility.getMonthDayFormat(unixTimestamp, timezoneID);
         int formatId = R.string.format_full_friendly_date;
-        return String.format(context.getString(
-                formatId,
-                dayText,
-                dateText));
+        return String.format(context.getString(formatId), dayText, dateText);
     }
 
     public static long normalizeDate (long unixTimestamp, String timezoneID) {
@@ -504,7 +501,7 @@ public class Utility {
                 stringId = R.string.condition_962;
                 break;
             default:
-                return context.getString(R.string.condition_unknown, weatherId);
+                return String.format(context.getString(R.string.condition_unknown), Integer.toString(weatherId));
         }
         return context.getString(stringId);
     }
