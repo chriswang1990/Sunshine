@@ -22,7 +22,8 @@
         android:id="@+id/recyclerview_forecast"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@null"/>
+        android:divider="@null"
+        />
 
     <!-- empty list-->
     <TextView

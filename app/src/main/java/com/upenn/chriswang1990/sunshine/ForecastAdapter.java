@@ -18,8 +18,8 @@ package com.upenn.chriswang1990.sunshine;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DataSetObserver;
 import android.net.Uri;
-import android.support.v4.widget.CursorAdapter;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,9 +37,17 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
     private static final int VIEW_TYPE_TODAY = 0;
     private static final int VIEW_TYPE_FUTURE_DAY = 1;
+    private static final int VIEW_TYPE_SELECTED = 2;
     private boolean mTwoPane = false;
-    CursorAdapter mCursorAdapter;
-    Context mContext;
+
+    private int selectedPosition = 0;
+
+    private Context mContext;
+    private Cursor mCursor;
+    private boolean mDataValid;
+    private int mRowIdColumn;
+    private DataSetObserver mDataSetObserver;
+
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -48,7 +56,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
      */
     public interface UriCallback {
         /**
-         * DetailFragment Callback for when an item has been selected.
+         * DetailFragment Callback for when an item has been selected, implemented in MainActivity
          */
         void onItemSelected(Uri dateUri);
     }
@@ -60,47 +68,110 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         void onItemSelected(int pos);
     }
 
-    public ForecastAdapter(Context context, Cursor c) {
+    public ForecastAdapter(Context context, Cursor cursor) {
         mContext = context;
-        mCursorAdapter = new CursorAdapter(mContext, c, 0) {
+        mCursor = cursor;
+        mDataValid = cursor != null;
+        mRowIdColumn = mDataValid ? mCursor.getColumnIndex("_id") : -1;
+        mDataSetObserver = new ForecastAdapter.NotifyingDataSetObserver();
+        if (mCursor != null) {
+            mCursor.registerDataSetObserver(mDataSetObserver);
+        }
+    }
 
-            @Override
-            public View newView(Context context, Cursor cursor, ViewGroup parent) {
-                return null;
-            }
+    public Cursor getCursor() {
+        return mCursor;
+    }
 
-            @Override
-            public void bindView(View view, Context context, Cursor cursor) {
-            }
+    @Override
+    public int getItemCount() {
+        if (mDataValid && mCursor != null) {
+            return mCursor.getCount();
+        }
+        return 0;
+    }
 
-            @Override
-            public Cursor swapCursor(Cursor newCursor) {
-                Cursor oldCursor = super.swapCursor(newCursor);
-                notifyDataSetChanged();
-                return oldCursor;
+    @Override
+    public long getItemId(int position) {
+        if (mDataValid && mCursor != null && mCursor.moveToPosition(position)) {
+            return mCursor.getLong(mRowIdColumn);
+        }
+        return 0;
+    }
+
+    @Override
+    public void setHasStableIds(boolean hasStableIds) {
+        super.setHasStableIds(true);
+    }
+
+    /**
+     * Change the underlying cursor to a new cursor. If there is an existing cursor it will be
+     * closed.
+     */
+    public void changeCursor(Cursor cursor) {
+        Cursor old = swapCursor(cursor);
+        if (old != null) {
+            old.close();
+        }
+    }
+
+    /**
+     * Swap in a new Cursor, returning the old Cursor.  Unlike
+     * {@link #changeCursor(Cursor)}, the returned old Cursor is <em>not</em>
+     * closed.
+     */
+    public Cursor swapCursor(Cursor newCursor) {
+        if (newCursor == mCursor) {
+            return null;
+        }
+        final Cursor oldCursor = mCursor;
+        if (oldCursor != null && mDataSetObserver != null) {
+            oldCursor.unregisterDataSetObserver(mDataSetObserver);
+        }
+        mCursor = newCursor;
+        if (mCursor != null) {
+            if (mDataSetObserver != null) {
+                mCursor.registerDataSetObserver(mDataSetObserver);
             }
-        };
+            mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
+            mDataValid = true;
+            notifyDataSetChanged();
+        } else {
+            mRowIdColumn = -1;
+            mDataValid = false;
+            notifyDataSetChanged();
+            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
+        }
+        return oldCursor;
+    }
+
+    private class NotifyingDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            super.onChanged();
+            mDataValid = true;
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onInvalidated() {
+            super.onInvalidated();
+            mDataValid = false;
+            notifyDataSetChanged();
+            //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
+        }
     }
 
     /**
      * Cache of the children views for a forecast list item.
      */
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView iconView;
         private final TextView dateView;
         private final TextView descriptionView;
         private final TextView highTempView;
         private final TextView lowTempView;
         private final TextView cityNameView;
-        private int normalizedDate;
-
-        @Override
-        public void onClick(View view) {
-            String locationSetting = Utility.getPreferredLocation(mContext);
-            ((UriCallback) mContext).onItemSelected(WeatherContract.WeatherEntry.
-                    buildWeatherLocationWithDate(locationSetting, normalizedDate));
-            ((PositionCallback) mContext).onItemSelected(getAdapterPosition());
-        }
 
         public ViewHolder(View view) {
             super(view);
@@ -119,31 +190,40 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Cursor cursor = mCursorAdapter.getCursor();
-        int pos = cursor.getPosition();
-        viewType = getItemViewType(pos + 1);
         int layoutId;
         if (viewType == VIEW_TYPE_TODAY) {
             layoutId = R.layout.list_item_forecast_today;
-        } else if (viewType == VIEW_TYPE_FUTURE_DAY) {
+        } else if (viewType == VIEW_TYPE_SELECTED) {
             layoutId = R.layout.list_item_forecast;
         } else {
             layoutId = R.layout.list_item_forecast;
         }
         View view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
+        if (viewType == VIEW_TYPE_SELECTED) {
+            view.setBackgroundResource(R.drawable.touch_selector_activated);
+        }
         ViewHolder viewHolder = new ViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        Cursor cursor = mCursorAdapter.getCursor();
-        cursor.moveToPosition(position);
-        viewHolder.normalizedDate = cursor.getInt(ForecastFragment.COL_WEATHER_DATE);
-        int weatherId = cursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
-        int currentPos = cursor.getPosition();
+    public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
+        mCursor.moveToPosition(position);
+        final int normalizedDate = mCursor.getInt(ForecastFragment.COL_WEATHER_DATE);
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setSelectedPosition(position);
+                String locationSetting = Utility.getPreferredLocation(mContext);
+                ((UriCallback) mContext).onItemSelected(WeatherContract.WeatherEntry.
+                        buildWeatherLocationWithDate(locationSetting, normalizedDate));
+                ((PositionCallback) mContext).onItemSelected(viewHolder.getAdapterPosition());
+            }
+        });
+        int weatherId = mCursor.getInt(ForecastFragment.COL_WEATHER_CONDITION_ID);
+        int currentPos = mCursor.getPosition();
         int viewType = getItemViewType(currentPos);
-        String cityName = cursor.getString(ForecastFragment.COL_CITY_NAME);
+        String cityName = mCursor.getString(ForecastFragment.COL_CITY_NAME);
         switch (viewType) {
             case VIEW_TYPE_TODAY:
                 viewHolder.iconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
@@ -156,8 +236,8 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         }
 
         //get date with get readable date method
-        long unixDate = cursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
-        String timezoneID = cursor.getString(ForecastFragment.COL_TIMEZONE_ID);
+        long unixDate = mCursor.getLong(ForecastFragment.COL_WEATHER_DATE_UNIX);
+        String timezoneID = mCursor.getString(ForecastFragment.COL_TIMEZONE_ID);
         viewHolder.dateView.setText(Utility.getReadableDateString(unixDate, timezoneID));
 
         //get and set description string
@@ -170,24 +250,32 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
 
         // Read high temperature from cursor
         String high = Utility.formatTemperature(
-                mContext, cursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP));
+                mContext, mCursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP));
         viewHolder.highTempView.setText(high);
         viewHolder.highTempView.setContentDescription(mContext.getString(R.string.a11y_high_temp, high));
 
         String low = Utility.formatTemperature(
-                mContext, cursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP));
+                mContext, mCursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP));
         viewHolder.lowTempView.setText(low);
         viewHolder.lowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, low));
     }
 
     @Override
-    public int getItemCount() {
-        return mCursorAdapter.getCount();
+    public int getItemViewType(int position) {
+        int viewType;
+        if (position == 0 && !mTwoPane) {
+            viewType = VIEW_TYPE_TODAY;
+        } else if (selectedPosition == position) {
+            viewType = VIEW_TYPE_SELECTED;
+        } else {
+            viewType = VIEW_TYPE_FUTURE_DAY;
+        }
+        return viewType;
     }
 
-    @Override
-    public int getItemViewType(int position) {
-        int viewType = (position == 0 && !mTwoPane) ? VIEW_TYPE_TODAY : VIEW_TYPE_FUTURE_DAY;
-        return viewType;
+    public void setSelectedPosition(int position) {
+        notifyItemChanged(selectedPosition);
+        selectedPosition = position;
+        notifyItemChanged(selectedPosition);
     }
 }

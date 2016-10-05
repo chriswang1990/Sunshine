@@ -49,7 +49,7 @@ import java.util.Locale;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity {
-    protected final static int PLACE_PICKER_REQUEST = 9090;
+    protected final static int PLACE_PICKER_REQUEST = 1026;
     PrefsFragment mPrefsFragment;
     public static ImageView mAttribution;
 

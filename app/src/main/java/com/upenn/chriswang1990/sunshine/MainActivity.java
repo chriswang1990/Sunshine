@@ -26,7 +26,7 @@ import android.view.MenuItem;
 
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback{
+public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback, ForecastAdapter.PositionCallback{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
@@ -126,5 +126,12 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
                     .setData(dateUri);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onItemSelected(int pos) {
+        ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
+                (R.id.fragment_forecast);
+        ff.setPosition(pos);
     }
 }

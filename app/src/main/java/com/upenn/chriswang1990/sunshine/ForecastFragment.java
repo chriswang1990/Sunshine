@@ -45,7 +45,8 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener, ForecastAdapter.PositionCallback {
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener
+{
 
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
@@ -162,6 +163,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     void onLocationChanged() {
+        mPosition = 0;
         restartLoader();
     }
 
@@ -200,25 +202,30 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mForecastAdapter.swapCursor(data);
         isCursorEmpty();
-        mForecastAdapter.mCursorAdapter.swapCursor(data);
         if (mPosition != RecyclerView.NO_POSITION) {
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
             mRecyclerView.smoothScrollToPosition(mPosition);
+            mForecastAdapter.setSelectedPosition(mPosition);
         }
         updateEmptyView();
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        mForecastAdapter.mCursorAdapter.swapCursor(null);
+        mForecastAdapter.swapCursor(null);
     }
 
     public void setIsTwoPane(boolean isTwoPane) {
         if (mForecastAdapter != null) {
             mForecastAdapter.setIsTwoPane(isTwoPane);
         }
+    }
+
+    public void setPosition(int pos) {
+        mPosition = pos;
     }
 
     private void updateEmptyView() {
@@ -262,11 +269,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         SunshineSyncAdapter.syncImmediately(getActivity());
     }
 
-    @Override
-    public void onItemSelected(int pos) {
-        mPosition = pos;
-    }
-
     public boolean isCursorEmpty() {
         if (mForecastAdapter.getItemCount() == 0) {
             mRecyclerView.setVisibility(View.GONE);
@@ -291,7 +293,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // intent can is detailed in the "Common Intents" page of Android's developer site:
         // http://developer.android.com/guide/components/intents-common.html#Maps
         if (null != mForecastAdapter) {
-            Cursor c = mForecastAdapter.mCursorAdapter.getCursor();
+            Cursor c = mForecastAdapter.getCursor();
             if (null != c) {
                 c.moveToPosition(0);
                 String posLat = c.getString(COL_COORD_LAT);
