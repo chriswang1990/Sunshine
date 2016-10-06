@@ -53,14 +53,8 @@ import com.upenn.chriswang1990.sunshine.sync.retrofit.TimezoneResponse;
 import com.upenn.chriswang1990.sunshine.sync.retrofit.WeatherAPI;
 import com.upenn.chriswang1990.sunshine.sync.retrofit.WeatherResponse;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.net.HttpURLConnection;
 import java.util.Vector;
 
 import retrofit2.Call;
@@ -78,6 +72,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private Context context = getContext();
+    private String mTimezoneID = "";
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -96,15 +91,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     //Location status annotation
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_SERVER_INVALID, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
+    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
     public @interface LocationStatus {
     }
 
     public static final int LOCATION_STATUS_OK = 0;
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
-    public static final int LOCATION_STATUS_SERVER_INVALID = 2;
+    public static final int LOCATION_STATUS_INVALID = 2;
     public static final int LOCATION_STATUS_UNKNOWN = 3;
-    public static final int LOCATION_STATUS_INVALID = 4;
 
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -112,18 +106,19 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        //refreshing last sync time
+        Utility.setLastDataSync(context);
+        //Initialize the timezone status when refreshing
+        setTimezoneStatus(context, true);
         // We no longer need just the location String, but also potentially the latitude and
         // longitude, in case we are syncing based on a new Place Picker API result.
         final String locationQuery = Utility.getPreferredLocation(context);
         String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
         String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
-        // Will contain the raw JSON response as a string.
-        String forecastJsonStr;
         String format = "json";
         String units = "metric";
         int numDays = 14;
-        //refreshing last sync time
-        Utility.setLastDataSync(context);
+        //retrofit call building
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(WeatherAPI.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -135,57 +130,23 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         } else {
             weatherCall = weatherAPI.getResponse(locationQuery, null, null, format, units, numDays, BuildConfig.OPEN_WEATHER_MAP_API_KEY);
         }
+
+        Log.d("weather API call URL", weatherCall.request().url().toString());
         weatherCall.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful()) {
-                    int errorCode = Integer.valueOf(response.body().getCod());
-                    switch (errorCode) {
-                        case HttpURLConnection.HTTP_OK:
-                            break;
-                        case HttpURLConnection.HTTP_NOT_FOUND:
-                            setLocationStatus(context, LOCATION_STATUS_INVALID);
-                            return;
-                        default:
-                            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                            return;
-                    }
                     fetchTimezoneID(response);
                 } else {
-                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                    setLocationStatus(context, LOCATION_STATUS_INVALID);
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                if (t instanceof IOException) {
-                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                } else {
-                    t.printStackTrace();
-                }
+                setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
             }
         });
-
-
-        if (stringBuilder.length() == 0) {
-            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-            return;
-        }
-        forecastJsonStr = stringBuilder.toString();
-        getWeatherDataFromJson(forecastJsonStr, locationQuery);
-        //Call api for the timezone info
-
-
-    }
-
-    catch(
-    JSONException e
-    )
-
-    {
-        Log.e(LOG_TAG, e.getMessage(), e);
-        e.printStackTrace();
-        setLocationStatus(context, LOCATION_STATUS_SERVER_INVALID);
     }
 
     /**
@@ -193,7 +154,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      *
      * @return Timezone ID of specific city lat and lon
      */
-    private void fetchTimezoneID(Response<WeatherResponse> weatherResponse) {
+    private void fetchTimezoneID(final Response<WeatherResponse> weatherResponse) {
         String latAndLon = weatherResponse.body().getCity().getCoord().getLat() +
                 "," + weatherResponse.body().getCity().getCoord().getLon();
 
@@ -202,216 +163,96 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         TimezoneAPI timezoneAPI = retrofit.create(TimezoneAPI.class);
-        Call<TimezoneResponse> timezonCall = timezoneAPI.getResponse(latAndLon, Long.toString(System.currentTimeMillis() / 1000), BuildConfig.GOOGLE_ANDROID_API_KEY);
-        timezonCall.enqueue(new Callback<TimezoneResponse>() {
+        Call<TimezoneResponse> timezoneCall = timezoneAPI.getResponse(latAndLon, Long.toString(System.currentTimeMillis() / 1000), BuildConfig.GOOGLE_ANDROID_API_KEY);
+        Log.d("weather API call URL", timezoneCall.request().url().toString());
+        timezoneCall.enqueue(new Callback<TimezoneResponse>() {
             @Override
             public void onResponse(Call<TimezoneResponse> call, Response<TimezoneResponse> response) {
                 if (response.isSuccessful()) {
-                    String timezoneID = response.body().getTimeZoneId();
-
-
+                    mTimezoneID = response.body().getTimeZoneId();
+                    Log.d("Returned timezone ID", mTimezoneID);
+                    setTimezoneStatus(context, true);
+                    getWeatherDataFromJson(weatherResponse, mTimezoneID);
                 } else {
-                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                    getWeatherDataFromJson(weatherResponse, "");
+                    setTimezoneStatus(context, false);
                 }
             }
 
             @Override
             public void onFailure(Call<TimezoneResponse> call, Throwable t) {
-                if (t instanceof IOException) {
-                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                } else {
-                    t.printStackTrace();
-                }
+                t.printStackTrace();
+                getWeatherDataFromJson(weatherResponse, "");
+                setTimezoneStatus(context, false);
             }
         });
-
-        String timezoneInfoStr = stringBuilder.toString();
-        JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
-        timezoneID = timezoneInfo.getString("timeZoneId");
     }
-//        } catch (IOException e) {
-//            Log.e(LOG_TAG, "Error ", e);
-//            // If the code didn't successfully get the timezoneID, there's no point in attempting
-//            // to parse it.
-//        } catch (JSONException e) {
-//            Log.e(LOG_TAG, e.getMessage(), e);
-//            e.printStackTrace();
-//        } finally {
-//            if (urlConnection != null) {
-//                urlConnection.disconnect();
-//            }
-//            if (reader != null) {
-//                try {
-//                    reader.close();
-//                } catch (final IOException e) {
-//                    Log.e(LOG_TAG, "Error closing stream", e);
-//                }
-//            }
-//        }
-//        return timezoneID;
-//    }
 
     /**
-     * Take the String representing the complete forecast in JSON Format and
-     * pull out the data we need to construct the Strings needed for the wireframes.
-     * <p>
-     * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-     * into an Object hierarchy for us.
+     * Take the retrofit weather response and the returned timezone ID and get the corresponding
+     * weather data, save them in local SQL database
      */
     private void getWeatherDataFromJson(Response<WeatherResponse> response,
-                                        String locationSetting) {
-
-        // Now we have a String representing the complete forecast in JSON Format.
-        // Fortunately parsing is easy:  constructor takes the JSON string and converts it
-        // into an Object hierarchy for us.
-
-        // These are the names of the JSON objects that need to be extracted.
-
+                                        String timezoneID) {
         // Location information
-        final String OWM_CITY = "city";
-        final String OWM_CITY_NAME = "name";
-        final String OWM_COORD = "coord";
+        WeatherResponse weatherData = response.body();
+        String locationSetting = Utility.getPreferredLocation(context);
+        String cityName = weatherData.getCity().getName();
+        double cityLatitude = weatherData.getCity().getCoord().getLat();
+        double cityLongitude = weatherData.getCity().getCoord().getLon();
+        long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude,
+                timezoneID);
+        int listLength = weatherData.getList().toArray().length;
+        // Insert the new weather information into the database
+        Vector<ContentValues> cVVector = new Vector<>(listLength);
+        for (int i = 0; i < listLength; i++) {
+            // These are the values that will be collected.
+            WeatherResponse.ListBean dateWeather = weatherData.getList().get(i);
+            long unixTimestamp = dateWeather.getDt();
+            // the unix time(in milliseconds);
+            long dateTime = Utility.normalizeDate(unixTimestamp, timezoneID);
+            double pressure = dateWeather.getPressure();
+            int humidity = dateWeather.getHumidity();
+            double windSpeed = dateWeather.getSpeed();
+            int windDirection = dateWeather.getDeg();
+            // Temperatures are in a child object called "temp".  Try not to name variables
+            // "temp" when working with temperature.  It confuses everybody.
+            double high = dateWeather.getTemp().getMax();
+            double low = dateWeather.getTemp().getMin();
+            // Description is in a child array called "weather", which is 1 element long.
+            // That element also contains a weather code.
+            String description = dateWeather.getWeather().get(0).getMain();
+            int weatherId = dateWeather.getWeather().get(0).getId();
 
-        // Location coordinate
-        final String OWM_LATITUDE = "lat";
-        final String OWM_LONGITUDE = "lon";
+            ContentValues weatherValues = new ContentValues();
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTime);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, unixTimestamp);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
+            weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
 
-        // Date Infomation
-        final String OWM_DATE = "dt";
-
-        // Weather information.  Each day's forecast info is an element of the "list" array.
-        final String OWM_LIST = "list";
-
-        final String OWM_PRESSURE = "pressure";
-        final String OWM_HUMIDITY = "humidity";
-        final String OWM_WINDSPEED = "speed";
-        final String OWM_WIND_DIRECTION = "deg";
-
-        // All temperatures are children of the "temp" object.
-        final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
-
-        final String OWM_WEATHER = "weather";
-        final String OWM_DESCRIPTION = "main";
-        final String OWM_WEATHER_ID = "id";
-
-        final String OWN_MESSAGE_CODE = "cod";
-
-        Context context = getContext();
-        try {
-            //check whether we encounter an error
-            if (forecastJson.has(OWN_MESSAGE_CODE)) {
-                int errorCode = forecastJson.getInt(OWN_MESSAGE_CODE);
-
-                switch (errorCode) {
-                    case HttpURLConnection.HTTP_OK:
-                        break;
-                    case HttpURLConnection.HTTP_NOT_FOUND:
-                        setLocationStatus(context, LOCATION_STATUS_INVALID);
-                        return;
-                    default:
-                        setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                        return;
-                }
-            }
-
-            JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
-
-            JSONObject cityJson = forecastJson.getJSONObject(OWM_CITY);
-            String cityName = cityJson.getString(OWM_CITY_NAME);
-
-            JSONObject cityCoord = cityJson.getJSONObject(OWM_COORD);
-            double cityLatitude = cityCoord.getDouble(OWM_LATITUDE);
-            double cityLongitude = cityCoord.getDouble(OWM_LONGITUDE);
-
-            //Get the timezone from google API
-            mTimezoneID = fetchTimezoneID(cityLatitude, cityLongitude);
-            long locationId = addLocation(locationSetting, cityName, cityLatitude, cityLongitude,
-                    mTimezoneID);
-
-            // Insert the new weather information into the database
-            Vector<ContentValues> cVVector = new Vector<>(weatherArray.length());
-            // OWM returns daily forecasts based upon the local time of the city that is being
-            // asked for, which means that we need to know the GMT offset to translate this data
-            // properly.
-
-            // Since this data is also sent in-order and the first day is always the
-            // current day, we're going to take advantage of that to get a nice
-            // normalized UTC date for all of our weather.
-            for (int i = 0; i < weatherArray.length(); i++) {
-                // These are the values that will be collected.
-                long dateTime;
-                long unixTimestamp;
-                double pressure;
-                int humidity;
-                double windSpeed;
-                double windDirection;
-
-                double high;
-                double low;
-
-                String description;
-                int weatherId;
-
-                // Get the JSON object representing the day
-                JSONObject dayForecast = weatherArray.getJSONObject(i);
-                unixTimestamp = dayForecast.getLong(OWM_DATE);
-                // the unix time(in milliseconds);
-                dateTime = Utility.normalizeDate(unixTimestamp, mTimezoneID);
-                pressure = dayForecast.getDouble(OWM_PRESSURE);
-                humidity = dayForecast.getInt(OWM_HUMIDITY);
-                windSpeed = dayForecast.getDouble(OWM_WINDSPEED);
-                windDirection = dayForecast.getDouble(OWM_WIND_DIRECTION);
-
-                // Description is in a child array called "weather", which is 1 element long.
-                // That element also contains a weather code.
-                JSONObject weatherObject =
-                        dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
-                description = weatherObject.getString(OWM_DESCRIPTION);
-                weatherId = weatherObject.getInt(OWM_WEATHER_ID);
-
-                // Temperatures are in a child object called "temp".  Try not to name variables
-                // "temp" when working with temperature.  It confuses everybody.
-                JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-                high = temperatureObject.getDouble(OWM_MAX);
-                low = temperatureObject.getDouble(OWM_MIN);
-
-                ContentValues weatherValues = new ContentValues();
-
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationId);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, dateTime);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE_UNIX_TIMESTAMP, unixTimestamp);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, humidity);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, pressure);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, windSpeed);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, windDirection);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, high);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
-                weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
-
-                cVVector.add(weatherValues);
-            }
-            // add to database
-            int rowsDeleted = 0;
-            if (cVVector.size() > 0) {
-                ContentValues[] values = new ContentValues[cVVector.size()];
-                cVVector.toArray(values);
-                context.getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
-                        values);
-                rowsDeleted = context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
-                        WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
-                        new String[]{Long.toString(Utility.normalizeDate(System.currentTimeMillis()
-                                / 1000, mTimezoneID) - 1)});
-                notifyWeather();
-            }
-            setLocationStatus(context, LOCATION_STATUS_OK);
-
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
+            cVVector.add(weatherValues);
         }
+        // add to database
+        int rowsDeleted = 0;
+        if (cVVector.size() > 0) {
+            ContentValues[] values = new ContentValues[cVVector.size()];
+            cVVector.toArray(values);
+            context.getContentResolver().bulkInsert(WeatherContract.WeatherEntry.CONTENT_URI,
+                    values);
+            rowsDeleted = context.getContentResolver().delete(WeatherContract.WeatherEntry.CONTENT_URI,
+                    WeatherContract.WeatherEntry.COLUMN_DATE + " <= ?",
+                    new String[]{Long.toString(Utility.normalizeDate(System.currentTimeMillis()
+                            / 1000, timezoneID) - 1)});
+            notifyWeather();
+        }
+        setLocationStatus(context, LOCATION_STATUS_OK);
     }
 
     private void notifyWeather() {
@@ -505,6 +346,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param cityName        A human-readable city name, e.g "Mountain View"
      * @param lat             the latitude of the city
      * @param lon             the longitude of the city
+     * @param timezoneID      timezone info of the city
      * @return the row ID of the added location.
      */
     long addLocation(String locationSetting, String cityName, double lat, double lon, String
@@ -585,7 +427,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         // Create the account type and default account
         Account newAccount = new Account(
                 context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
-
         // If the password doesn't exist, the account doesn't exist
         if (null == accountManager.getPassword(newAccount)) {
 
@@ -639,6 +480,20 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
+        spe.commit();
+    }
+
+    /**
+     * Sets the timezone status into shared preference.  This function should not be called from
+     * the UI thread because it uses commit to write to the shared preferences.
+     *
+     * @param c              Context to get the PreferenceManager from.
+     * @param timezoneStatus The IntDef value to set
+     */
+    private static void setTimezoneStatus(Context c, boolean timezoneStatus) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putBoolean(c.getString(R.string.pref_timezone_status_key), timezoneStatus);
         spe.commit();
     }
 }

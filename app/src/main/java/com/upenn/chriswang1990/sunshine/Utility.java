@@ -544,6 +544,16 @@ public class Utility {
     }
 
     /**
+     * Check if the timezone data is correctly return during API call
+     * @param c Context used to get the SharedPreferences
+     * @return the timezone status boolean type
+     */
+    static public boolean getTimezoneStatus(Context c){
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        return sp.getBoolean(c.getString(R.string.pref_timezone_status_key), true);
+    }
+
+    /**
      * Resets the location status.  (Sets it to SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN)
      * @param c Context used to get the SharedPreferences
      */

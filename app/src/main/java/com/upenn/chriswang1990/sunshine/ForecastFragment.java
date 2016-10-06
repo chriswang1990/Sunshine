@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
@@ -211,6 +212,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             mForecastAdapter.setSelectedPosition(mPosition);
         }
         updateEmptyView();
+        if (!Utility.getTimezoneStatus(getActivity())) {
+            Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -238,11 +242,8 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                     case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
                         message = R.string.empty_forecast_list_server_down;
                         break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_INVALID:
-                        message = R.string.empty_forecast_list_server_error;
-                        break;
                     case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
-                        message = R.string.empty_forecast_list_invalid_location;
+                        message = R.string.empty_forecast_list_invalid;
                         break;
                     default:
                         if (!Utility.isNetworkAvailable(getActivity())) {

@@ -105,7 +105,7 @@ public class WeatherResponse {
      * clouds : 0
      */
     public static class ListBean {
-        private int dt;
+        private long dt;
 
         private TempBean temp;
         private double pressure;
@@ -115,7 +115,7 @@ public class WeatherResponse {
 
         private List<WeatherBean> weather;
 
-        public int getDt() {
+        public long getDt() {
             return dt;
         }
 

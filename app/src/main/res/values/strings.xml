@@ -34,6 +34,7 @@
     <string name="pref_location_key" translatable="false">location</string>
     <!-- Key for location status -->
     <string name="pref_location_status_key" translatable="false">loc-status</string>
+    <string name="pref_timezone_status_key" translatable="false">time-status</string>
 
     <!-- Content description for the get current location button in the location preference -->
     <string name="pref_current_location_desc">Use my location</string>
@@ -43,8 +44,8 @@
     <string name="pref_location_longitude" translatable="false">loc-longitude</string>
 
     <!-- Strings used when displaying the state of the Location in settings -->
-    <string name="pref_location_error_description">Invalid Location (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
-    <string name="pref_location_unknown_description">Validating Location ... (<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_error_description">Invalid Location or server error(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_unknown_description">Validating Location \u2026(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
 
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
     <string name="pref_units_label">Unit Setting</string>
@@ -102,7 +103,7 @@
     <string name="empty_forecast_list_no_network">No weather information available. The network is not available to fetch weather data.</string>
     <string name="empty_forecast_list_server_down">No weather information available. The server is not returning data. Please wait or try refreshing</string>
     <string name="empty_forecast_list_server_error">No weather information available. The server is not returning valid data. Please check for an updated version of Sunshine.</string>
-    <string name="empty_forecast_list_invalid_location">No weather information available. The location in settings is not recognized by the weather server.</string>
+    <string name="empty_forecast_list_invalid">No weather information available. The location in settings is not recognized or the server is not returning valid data. Please check the settings and get an updated version of Sunshine.</string>
     <!-- A11y -->
     <string name="a11y_city_name">City name: <xliff:g id="city">%1$s</xliff:g></string>
     <string name="a11y_forecast">Forecast: <xliff:g id="condition">%1$s</xliff:g></string>
@@ -176,5 +177,7 @@
     <!-- For Google Places API Attributions -->
     <string name="powered_by_google">Powered by Google</string>
     <string name="last_location_key">last-location</string>
+    <!-- Timezone warning when timezone info is missing -->
+    <string name="timezone_warning">Timezone information not valid, the weather data may not be consistent with the date</string>
 
 </resources>
