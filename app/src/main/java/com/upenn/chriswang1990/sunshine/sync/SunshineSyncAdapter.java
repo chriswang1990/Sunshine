@@ -48,20 +48,26 @@ import com.upenn.chriswang1990.sunshine.MainActivity;
 import com.upenn.chriswang1990.sunshine.R;
 import com.upenn.chriswang1990.sunshine.Utility;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
+import com.upenn.chriswang1990.sunshine.sync.retrofit.TimezoneAPI;
+import com.upenn.chriswang1990.sunshine.sync.retrofit.TimezoneResponse;
+import com.upenn.chriswang1990.sunshine.sync.retrofit.WeatherAPI;
+import com.upenn.chriswang1990.sunshine.sync.retrofit.WeatherResponse;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Vector;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
@@ -71,7 +77,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
-    String mTimezoneID;
+    private Context context = getContext();
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -108,115 +114,142 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         // We no longer need just the location String, but also potentially the latitude and
         // longitude, in case we are syncing based on a new Place Picker API result.
-        Context context = getContext();
-        String locationQuery = Utility.getPreferredLocation(context);
+        final String locationQuery = Utility.getPreferredLocation(context);
         String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
         String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
-        //refreshing last sync time
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = prefs.edit();
-        String lastDataSyncKey = context.getString(R.string.pref_last_data_sync);
-        editor.putLong(lastDataSyncKey, System.currentTimeMillis());
-        editor.apply();
-
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-
         // Will contain the raw JSON response as a string.
         String forecastJsonStr;
         String format = "json";
         String units = "metric";
         int numDays = 14;
-
-        try {
-            // Construct the URL for the OpenWeatherMap query
-            // Possible parameters are avaiable at OWM's forecast API page, at
-            // http://openweathermap.org/API#forecast
-            Uri.Builder weatherAPIBuilder = new Uri.Builder();
-            weatherAPIBuilder.scheme("http").authority("api.openweathermap.org").appendPath("data").appendPath
-                    ("2.5").appendPath("forecast").appendPath("daily");
-            final String QUERY_PARAM = "q";
-            final String LAT_PARAM = "lat";
-            final String LON_PARAM = "lon";
-            final String FORMAT_PARAM = "mode";
-            final String UNITS_PARAM = "units";
-            final String DAYS_PARAM = "cnt";
-            final String APPID_PARAM = "APPID";
-
-            // Instead of always building the query based off of the location string, we want to
-            // potentially build a query using a lat/lon value. This will be the case when we are
-            // syncing based off of a new location from the Place Picker API. So we need to check
-            // if we have a lat/lon to work with, and use those when we do. Otherwise, the weather
-            // service may not understand the location address provided by the Place Picker API
-            // and the user could end up with no weather! The horror!
-            if (Utility.isLocationLatLonAvailable(context)) {
-                weatherAPIBuilder.appendQueryParameter(LAT_PARAM, locationLatitude)
-                        .appendQueryParameter(LON_PARAM, locationLongitude);
-            } else {
-                weatherAPIBuilder.appendQueryParameter(QUERY_PARAM, locationQuery);
-            }
-
-            weatherAPIBuilder.appendQueryParameter(FORMAT_PARAM, format)
-                    .appendQueryParameter(UNITS_PARAM, units)
-                    .appendQueryParameter(DAYS_PARAM, Integer.toString(numDays))
-                    .appendQueryParameter(APPID_PARAM, BuildConfig.OPEN_WEATHER_MAP_API_KEY)
-                    .build();
-
-            URL weatherAPIUrl = new URL(weatherAPIBuilder.toString());
-            // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) weatherAPIUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuilder stringBuilder = new StringBuilder();
-            if (inputStream == null) {
-                // Nothing to do
-                return;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                line += "\n";
-                stringBuilder.append(line);
-            }
-
-            if (stringBuilder.length() == 0) {
-                setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-                return;
-            }
-            forecastJsonStr = stringBuilder.toString();
-            getWeatherDataFromJson(forecastJsonStr, locationQuery);
-            //Call api for the timezone info
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attempting
-            // to parse it.
-            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-            setLocationStatus(context, LOCATION_STATUS_SERVER_INVALID);
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
+        //refreshing last sync time
+        Utility.setLastDataSync(context);
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(WeatherAPI.ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        WeatherAPI weatherAPI = retrofit.create(WeatherAPI.class);
+        Call<WeatherResponse> weatherCall;
+        if (Utility.isLocationLatLonAvailable(context)) {
+            weatherCall = weatherAPI.getResponse(null, locationLatitude, locationLongitude, format, units, numDays, BuildConfig.OPEN_WEATHER_MAP_API_KEY);
+        } else {
+            weatherCall = weatherAPI.getResponse(locationQuery, null, null, format, units, numDays, BuildConfig.OPEN_WEATHER_MAP_API_KEY);
+        }
+        weatherCall.enqueue(new Callback<WeatherResponse>() {
+            @Override
+            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                if (response.isSuccessful()) {
+                    int errorCode = Integer.valueOf(response.body().getCod());
+                    switch (errorCode) {
+                        case HttpURLConnection.HTTP_OK:
+                            break;
+                        case HttpURLConnection.HTTP_NOT_FOUND:
+                            setLocationStatus(context, LOCATION_STATUS_INVALID);
+                            return;
+                        default:
+                            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                            return;
+                    }
+                    fetchTimezoneID(response);
+                } else {
+                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
                 }
             }
+
+            @Override
+            public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                if (t instanceof IOException) {
+                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                } else {
+                    t.printStackTrace();
+                }
+            }
+        });
+
+
+        if (stringBuilder.length() == 0) {
+            setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+            return;
         }
+        forecastJsonStr = stringBuilder.toString();
+        getWeatherDataFromJson(forecastJsonStr, locationQuery);
+        //Call api for the timezone info
+
+
     }
+
+    catch(
+    JSONException e
+    )
+
+    {
+        Log.e(LOG_TAG, e.getMessage(), e);
+        e.printStackTrace();
+        setLocationStatus(context, LOCATION_STATUS_SERVER_INVALID);
+    }
+
+    /**
+     * Get the mTimezoneID from google API by city lat and lon from weatherResponse
+     *
+     * @return Timezone ID of specific city lat and lon
+     */
+    private void fetchTimezoneID(Response<WeatherResponse> weatherResponse) {
+        String latAndLon = weatherResponse.body().getCity().getCoord().getLat() +
+                "," + weatherResponse.body().getCity().getCoord().getLon();
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(TimezoneAPI.ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        TimezoneAPI timezoneAPI = retrofit.create(TimezoneAPI.class);
+        Call<TimezoneResponse> timezonCall = timezoneAPI.getResponse(latAndLon, Long.toString(System.currentTimeMillis() / 1000), BuildConfig.GOOGLE_ANDROID_API_KEY);
+        timezonCall.enqueue(new Callback<TimezoneResponse>() {
+            @Override
+            public void onResponse(Call<TimezoneResponse> call, Response<TimezoneResponse> response) {
+                if (response.isSuccessful()) {
+                    String timezoneID = response.body().getTimeZoneId();
+
+
+                } else {
+                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TimezoneResponse> call, Throwable t) {
+                if (t instanceof IOException) {
+                    setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                } else {
+                    t.printStackTrace();
+                }
+            }
+        });
+
+        String timezoneInfoStr = stringBuilder.toString();
+        JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
+        timezoneID = timezoneInfo.getString("timeZoneId");
+    }
+//        } catch (IOException e) {
+//            Log.e(LOG_TAG, "Error ", e);
+//            // If the code didn't successfully get the timezoneID, there's no point in attempting
+//            // to parse it.
+//        } catch (JSONException e) {
+//            Log.e(LOG_TAG, e.getMessage(), e);
+//            e.printStackTrace();
+//        } finally {
+//            if (urlConnection != null) {
+//                urlConnection.disconnect();
+//            }
+//            if (reader != null) {
+//                try {
+//                    reader.close();
+//                } catch (final IOException e) {
+//                    Log.e(LOG_TAG, "Error closing stream", e);
+//                }
+//            }
+//        }
+//        return timezoneID;
+//    }
 
     /**
      * Take the String representing the complete forecast in JSON Format and
@@ -225,9 +258,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Fortunately parsing is easy:  constructor takes the JSON string and converts it
      * into an Object hierarchy for us.
      */
-    private void getWeatherDataFromJson(String forecastJsonStr,
-                                        String locationSetting)
-            throws JSONException {
+    private void getWeatherDataFromJson(Response<WeatherResponse> response,
+                                        String locationSetting) {
 
         // Now we have a String representing the complete forecast in JSON Format.
         // Fortunately parsing is easy:  constructor takes the JSON string and converts it
@@ -268,9 +300,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
         Context context = getContext();
         try {
-            JSONObject forecastJson = new JSONObject(forecastJsonStr);
-
-            //check whether whe encounter an error
+            //check whether we encounter an error
             if (forecastJson.has(OWN_MESSAGE_CODE)) {
                 int errorCode = forecastJson.getInt(OWN_MESSAGE_CODE);
 
@@ -382,72 +412,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             Log.e(LOG_TAG, e.getMessage(), e);
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Get the mTimezoneID from google API by city lat and lon
-     *
-     * @param cityLatitude  latitude data for the city
-     * @param cityLongitude longitude data for the city
-     * @return Timezone ID of specific city lat and lon
-     */
-    private String fetchTimezoneID(double cityLatitude, double cityLongitude) {
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        String timezoneID = "null";
-        try {
-            String latAndLon = cityLatitude + "," + cityLongitude;
-            Uri.Builder timezoneAPIBuilder = new Uri.Builder();
-            timezoneAPIBuilder.scheme("https").authority("maps.googleapis.com").appendPath
-                    ("maps").appendPath
-                    ("api").appendPath("timezone").appendPath("json");
-            timezoneAPIBuilder.appendQueryParameter("location", latAndLon)
-                    .appendQueryParameter("timestamp", Long.toString(System.currentTimeMillis() / 1000))
-                    .appendQueryParameter("key", BuildConfig.GOOGLE_ANDROID_API_KEY)
-                    .build();
-            URL timezoneAPIUrl = new URL(timezoneAPIBuilder.toString());
-            // Create the request to OpenWeatherMap, and open the connection
-            urlConnection = (HttpURLConnection) timezoneAPIUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuilder stringBuilder = new StringBuilder();
-            if (inputStream != null) {
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // stringBuilder for debugging.
-                    line += "\n";
-                    stringBuilder.append(line);
-                }
-
-                String timezoneInfoStr = stringBuilder.toString();
-                JSONObject timezoneInfo = new JSONObject(timezoneInfoStr);
-                timezoneID = timezoneInfo.getString("timeZoneId");
-            }
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-            // If the code didn't successfully get the timezoneID, there's no point in attempting
-            // to parse it.
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
-                }
-            }
-        }
-        return timezoneID;
     }
 
     private void notifyWeather() {

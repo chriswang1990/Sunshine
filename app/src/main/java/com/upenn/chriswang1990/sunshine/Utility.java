@@ -89,6 +89,14 @@ public class Utility {
               .equals(context.getString(R.string.pref_units_metric));
     }
 
+    public static void setLastDataSync(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = prefs.edit();
+        String lastDataSyncKey = context.getString(R.string.pref_last_data_sync);
+        editor.putLong(lastDataSyncKey, System.currentTimeMillis());
+        editor.apply();
+    }
+
     public static long getLastDataSync(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String dataSyncKey = context.getString(R.string.pref_last_data_sync);
