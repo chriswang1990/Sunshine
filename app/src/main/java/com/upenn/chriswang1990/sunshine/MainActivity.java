@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLocation = Utility.getPreferredLocation(this);
+        mLocation = Utility.getLastLocation(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
         ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
                 (R.id.fragment_forecast);
         if (location != null && !location.equals(mLocation)) {
-
             if (ff != null) {
                 ff.onLocationChanged();
             }
@@ -103,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
                 }
             }
             mLocation = location;
+            Utility.setLastLocation(this, location);
         }
     }
 
