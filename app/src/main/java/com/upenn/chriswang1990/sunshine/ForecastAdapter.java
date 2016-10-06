@@ -265,7 +265,7 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         int viewType;
         if (position == 0 && !mTwoPane) {
             viewType = VIEW_TYPE_TODAY;
-        } else if (selectedPosition == position) {
+        } else if (selectedPosition == position && mTwoPane) {
             viewType = VIEW_TYPE_SELECTED;
         } else {
             viewType = VIEW_TYPE_FUTURE_DAY;

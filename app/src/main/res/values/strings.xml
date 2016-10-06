@@ -175,5 +175,6 @@
 
     <!-- For Google Places API Attributions -->
     <string name="powered_by_google">Powered by Google</string>
+    <string name="last_location_key">last-location</string>
 
 </resources>
