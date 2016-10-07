@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.upenn.chriswang1990.sunshine;
 
 import android.content.SharedPreferences;
@@ -10,7 +27,7 @@ import android.preference.PreferenceManager;
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
-public class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener{
+public class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     //Callback to remove the footer in Setting Activity
     public interface AttributionCallback {
@@ -60,7 +77,7 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
-        setPreferenceSummary(preference,value);
+        setPreferenceSummary(preference, value);
         return true;
     }
 
@@ -103,7 +120,7 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
     // start our synchronization here
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if ( key.equals(getString(R.string.pref_location_key)) ) {
+        if (key.equals(getString(R.string.pref_location_key))) {
             // we've changed the location
             // Wipe out any potential PlacePicker latlng values so that we can use this text entry.
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -117,10 +134,10 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
             // Clear the location status
             Utility.resetLocationStatus(getActivity());
             SunshineSyncAdapter.syncImmediately(getActivity());
-        } else if ( key.equals(getString(R.string.pref_units_key)) ) {
+        } else if (key.equals(getString(R.string.pref_units_key))) {
             // units have changed. update lists of weather entries accordingly
             getActivity().getContentResolver().notifyChange(WeatherContract.WeatherEntry.CONTENT_URI, null);
-        } else if ( key.equals(getString(R.string.pref_location_status_key)) ) {
+        } else if (key.equals(getString(R.string.pref_location_status_key))) {
             // our location status has changed.  Update the summary accordingly
             Preference locationPreference = findPreference(getString(R.string.pref_location_key));
             bindPreferenceSummaryToValue(locationPreference);

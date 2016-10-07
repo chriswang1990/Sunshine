@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +46,7 @@ import java.util.Locale;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity implements PrefsFragment.AttributionCallback{
+public class SettingsActivity extends PreferenceActivity implements PrefsFragment.AttributionCallback {
     protected final static int PLACE_PICKER_REQUEST = 1026;
     PrefsFragment mPrefsFragment;
     ImageView mAttribution;
@@ -92,7 +93,7 @@ public class SettingsActivity extends PreferenceActivity implements PrefsFragmen
                 // If the provided place doesn't have an address, we'll form a display-friendly
                 // string from the latlng values.
                 if (TextUtils.isEmpty(address)) {
-                    address = String.format(Locale.US, "(%.2f, %.2f)",latLong.latitude, latLong.longitude);
+                    address = String.format(Locale.US, "(%.2f, %.2f)", latLong.latitude, latLong.longitude);
                 }
                 SharedPreferences sharedPreferences =
                         PreferenceManager.getDefaultSharedPreferences(this);

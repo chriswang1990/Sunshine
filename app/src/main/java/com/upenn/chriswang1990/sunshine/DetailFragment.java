@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +39,6 @@ import android.widget.TextView;
 
 import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
-/**
- * A placeholder fragment containing a simple view.
- */
 public class DetailFragment extends Fragment implements LoaderManager
         .LoaderCallbacks<Cursor> {
 
@@ -125,7 +123,7 @@ public class DetailFragment extends Fragment implements LoaderManager
         return rootView;
     }
 
-    private void finishCreatingMenu (Menu menu) {
+    private void finishCreatingMenu(Menu menu) {
         // Retrieve the share menu item
         MenuItem menuItem = menu.findItem(R.id.action_share);
         menuItem.setIntent(createShareForecastIntent());
@@ -243,22 +241,22 @@ public class DetailFragment extends Fragment implements LoaderManager
 
             forecastStr = String.format(getContext().getString(R.string.format_share_string), cityName, dateText, description, highString, lowString);
 
-            AppCompatActivity activity = (AppCompatActivity)getActivity();
+            AppCompatActivity activity = (AppCompatActivity) getActivity();
             Toolbar toolbarView = (Toolbar) getView().findViewById(R.id.toolbar);
 
             // We need to start the enter transition after the data has loaded
             if (activity instanceof DetailActivity) {
                 activity.supportStartPostponedEnterTransition();
 
-                if ( null != toolbarView ) {
+                if (null != toolbarView) {
                     activity.setSupportActionBar(toolbarView);
                     activity.getSupportActionBar().setDisplayShowTitleEnabled(false);
                     activity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 }
             } else {
-                if ( null != toolbarView ) {
+                if (null != toolbarView) {
                     Menu menu = toolbarView.getMenu();
-                    if ( null != menu ) menu.clear();
+                    if (null != menu) menu.clear();
                     toolbarView.inflateMenu(R.menu.detail_fragment);
                     finishCreatingMenu(toolbarView.getMenu());
                 }

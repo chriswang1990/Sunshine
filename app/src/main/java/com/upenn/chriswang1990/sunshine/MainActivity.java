@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +27,7 @@ import android.view.MenuItem;
 
 import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
-public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback, ForecastAdapter.PositionCallback{
+public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback, ForecastAdapter.PositionCallback {
 
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private String mLocation;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
         } else {
             mTwoPane = false;
         }
-        ForecastFragment forecastFragment =  ((ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast));
+        ForecastFragment forecastFragment = ((ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast));
         forecastFragment.setIsTwoPane(mTwoPane);
         SunshineSyncAdapter.initializeSyncAdapter(this);
     }
@@ -86,9 +87,9 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
     @Override
     protected void onResume() {
         super.onResume();
-        String location = Utility.getPreferredLocation( this );
+        String location = Utility.getPreferredLocation(this);
         // update the location in our second pane using the fragment manager
-        ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
+        ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentById
                 (R.id.fragment_forecast);
         if (location != null && !location.equals(mLocation)) {
             if (ff != null) {
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
 
     @Override
     public void onItemSelected(int pos) {
-        ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById
+        ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentById
                 (R.id.fragment_forecast);
         ff.setPosition(pos);
     }

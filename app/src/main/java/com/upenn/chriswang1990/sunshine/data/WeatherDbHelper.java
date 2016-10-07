@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.upenn.chriswang1990.sunshine.data;
 
 import android.content.Context;
@@ -40,13 +42,13 @@ public class WeatherDbHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
         final String SQL_CREATE_LOCATION_TABLE = "CREATE TABLE " + LocationEntry.TABLE_NAME + " (" +
-              LocationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-              LocationEntry.COLUMN_LOCATION_SETTING + " TEXT UNIQUE NOT NULL, " +
-              LocationEntry.COLUMN_CITY_NAME + " TEXT NOT NULL, " +
-              LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
-              LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
-              LocationEntry.COLUMN_TIMEZONE_ID + " TEXT NOT NULL" +
-              ");";
+                LocationEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                LocationEntry.COLUMN_LOCATION_SETTING + " TEXT UNIQUE NOT NULL, " +
+                LocationEntry.COLUMN_CITY_NAME + " TEXT NOT NULL, " +
+                LocationEntry.COLUMN_COORD_LAT + " REAL NOT NULL, " +
+                LocationEntry.COLUMN_COORD_LONG + " REAL NOT NULL, " +
+                LocationEntry.COLUMN_TIMEZONE_ID + " TEXT NOT NULL" +
+                ");";
 
         final String SQL_CREATE_WEATHER_TABLE = "CREATE TABLE " + WeatherEntry.TABLE_NAME + " (" +
                 // Why AutoIncrement here, and not above?

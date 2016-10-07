@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Android Open Source Project
+ * 1990chriswang1990@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,11 +69,11 @@ public class Utility {
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_location_key),
-              context.getString(R.string.pref_location_default));
+                context.getString(R.string.pref_location_default));
     }
 
     public static void setLastLocation(Context context,
-                                         String lastLocation) {
+                                       String lastLocation) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(context.getString(R.string.last_location_key), lastLocation).apply();
     }
 
@@ -85,8 +86,8 @@ public class Utility {
     public static boolean isMetric(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_units_key),
-              context.getString(R.string.pref_units_metric))
-              .equals(context.getString(R.string.pref_units_metric));
+                context.getString(R.string.pref_units_metric))
+                .equals(context.getString(R.string.pref_units_metric));
     }
 
     public static void setLastDataSync(Context context) {
@@ -157,7 +158,7 @@ public class Utility {
         return readableFormat.format(date);
     }
 
-    public static String getWeekTimeFormat (long unixTimestamp, String timezoneID) {
+    public static String getWeekTimeFormat(long unixTimestamp, String timezoneID) {
         long timeInMilliseconds = unixTimestamp * 1000;
         Date date = new Date(timeInMilliseconds);
         SimpleDateFormat dayTimeFormat = new SimpleDateFormat(WEEK_FORMAT, Locale.US);
@@ -165,7 +166,7 @@ public class Utility {
         return dayTimeFormat.format(date);
     }
 
-    public static String getMonthDayFormat (long unixTimestamp, String timezoneID) {
+    public static String getMonthDayFormat(long unixTimestamp, String timezoneID) {
         long timeInMilliseconds = unixTimestamp * 1000;
         Date date = new Date(timeInMilliseconds);
         SimpleDateFormat dayTimeFormat = new SimpleDateFormat(MONTH_DAY_FORMAT, Locale.US);
@@ -177,7 +178,7 @@ public class Utility {
      * Helper method to convert the database representation of the date into something to display
      * to users.  As classy and polished a user experience as "20140102" is, we can do better.
      *
-     * @param context Context to use for resource localization
+     * @param context       Context to use for resource localization
      * @param unixTimestamp The date in unixTimestamp format
      * @return a user-friendly representation of the date.
      */
@@ -188,7 +189,7 @@ public class Utility {
         return String.format(context.getString(formatId), dayText, dateText);
     }
 
-    public static long normalizeDate (long unixTimestamp, String timezoneID) {
+    public static long normalizeDate(long unixTimestamp, String timezoneID) {
         long timeInMilliseconds = unixTimestamp * 1000;
         Date date = new Date(timeInMilliseconds);
         SimpleDateFormat normalizedFormat = new SimpleDateFormat(DATE_FORMAT, Locale.US);
@@ -243,6 +244,7 @@ public class Utility {
     /**
      * Helper method to provide the icon resource id according to the weather condition id returned
      * by the OpenWeatherMap call.
+     *
      * @param weatherId from OpenWeatherMap API response
      * @return resource id for the corresponding icon. -1 if no relation is found.
      */
@@ -278,6 +280,7 @@ public class Utility {
     /**
      * Helper method to provide the art resource id according to the weather condition id returned
      * by the OpenWeatherMap call.
+     *
      * @param weatherId from OpenWeatherMap API response
      * @return resource id for the corresponding image. -1 if no relation is found.
      */
@@ -349,7 +352,8 @@ public class Utility {
     /**
      * Helper method to provide the string according to the weather
      * condition id returned by the OpenWeatherMap call.
-     * @param context Android context
+     *
+     * @param context   Android context
      * @param weatherId from OpenWeatherMap API response
      * @return string for the weather condition. null if no relation is found.
      */
@@ -525,38 +529,40 @@ public class Utility {
     }
 
     public static boolean isNetworkAvailable(Context c) {
-        ConnectivityManager cm = (ConnectivityManager)c.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activityNetwork = cm.getActiveNetworkInfo();
         return activityNetwork != null && activityNetwork.isConnectedOrConnecting();
     }
 
     /**
-     *
      * @param c Context used to get the SharedPreferences
      * @return the location status integer type
      */
     @SuppressWarnings("ResourceType")
-    static public @SunshineSyncAdapter.LocationStatus
-    int getLocationStatus(Context c){
+    static public
+    @SunshineSyncAdapter.LocationStatus
+    int getLocationStatus(Context c) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         return sp.getInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
     }
 
     /**
      * Check if the timezone data is correctly return during API call
+     *
      * @param c Context used to get the SharedPreferences
      * @return the timezone status boolean type
      */
-    static public boolean getTimezoneStatus(Context c){
+    static public boolean getTimezoneStatus(Context c) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         return sp.getBoolean(c.getString(R.string.pref_timezone_status_key), true);
     }
 
     /**
      * Resets the location status.  (Sets it to SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN)
+     *
      * @param c Context used to get the SharedPreferences
      */
-    static public void resetLocationStatus(Context c){
+    static public void resetLocationStatus(Context c) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
@@ -575,6 +581,6 @@ public class Utility {
 
     public static void showAsToast(Context context, String text) {
         int duration = Toast.LENGTH_LONG;
-        Toast.makeText(context,text, duration).show();
+        Toast.makeText(context, text, duration).show();
     }
 }
