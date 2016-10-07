@@ -37,13 +37,13 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class Utility {
-    public static final String DATE_FORMAT = "yyyyMMdd";
-    public static final String WEEK_FORMAT = "EEEE";
-    public static final String MONTH_DAY_FORMAT = "MMM d";
-    public static final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
+    private static final String DATE_FORMAT = "yyyyMMdd";
+    private static final String WEEK_FORMAT = "EEEE";
+    private static final String MONTH_DAY_FORMAT = "MMM d";
+    private static final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
 
     // We'll default our latlong to 0. Yay, "Earth!"
-    public static float DEFAULT_LATLONG = 0F;
+    private static float DEFAULT_LATLONG = 0F;
 
     public static boolean isLocationLatLonAvailable(Context context) {
         SharedPreferences prefs
@@ -86,7 +86,7 @@ public class Utility {
     public static boolean isMetric(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_units_key),
-                context.getString(R.string.pref_units_metric))
+                context.getString(R.string.pref_units_default))
                 .equals(context.getString(R.string.pref_units_metric));
     }
 
