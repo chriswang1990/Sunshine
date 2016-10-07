@@ -67,8 +67,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
-    public static final int SYNC_INTERVAL = 60 * 180;
-    public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
+    private static final int SYNC_INTERVAL = 60 * 180;
+    private static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private Context context = getContext();
@@ -136,25 +136,29 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful()) {
-                    fetchTimezoneID(response);
+                    //When the weather call is successful, call the fetchTimezoneIDAndProcessData and let it
+                    // handle the rest
+                    fetchTimezoneIDAndProcessData(response);
                 } else {
+                    //When the server response but returned JSON is invalid, can happen when
+                    // location is not valid or API has changed format
                     setLocationStatus(context, LOCATION_STATUS_INVALID);
                 }
             }
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                //Usually network connection or server problem here
                 setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
             }
         });
     }
 
     /**
-     * Get the mTimezoneID from google API by city lat and lon from weatherResponse
-     *
-     * @return Timezone ID of specific city lat and lon
+     * Get the mTimezoneID from google API by city lat and lon from weatherResponse, then process
+     * the data and store in SQL Database
      */
-    private void fetchTimezoneID(final Response<WeatherResponse> weatherResponse) {
+    private void fetchTimezoneIDAndProcessData(final Response<WeatherResponse> weatherResponse) {
         String latAndLon = weatherResponse.body().getCity().getCoord().getLat() +
                 "," + weatherResponse.body().getCity().getCoord().getLon();
 
@@ -172,9 +176,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     mTimezoneID = response.body().getTimeZoneId();
                     Log.d("Returned timezone ID", mTimezoneID);
                     setTimezoneStatus(context, true);
-                    getWeatherDataFromJson(weatherResponse, mTimezoneID);
+                    //Save the weather and timezone data to the database
+                    saveToDatabase(weatherResponse, mTimezoneID);
                 } else {
-                    getWeatherDataFromJson(weatherResponse, "");
+                    saveToDatabase(weatherResponse, "");
+                    //When API failed to return correct info, update the timezone status to notify user
                     setTimezoneStatus(context, false);
                 }
             }
@@ -182,7 +188,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             @Override
             public void onFailure(Call<TimezoneResponse> call, Throwable t) {
                 t.printStackTrace();
-                getWeatherDataFromJson(weatherResponse, "");
+                saveToDatabase(weatherResponse, "");
                 setTimezoneStatus(context, false);
             }
         });
@@ -192,8 +198,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Take the retrofit weather response and the returned timezone ID and get the corresponding
      * weather data, save them in local SQL database
      */
-    private void getWeatherDataFromJson(Response<WeatherResponse> response,
-                                        String timezoneID) {
+    private void saveToDatabase(Response<WeatherResponse> response,
+                                String timezoneID) {
         // Location information
         WeatherResponse weatherData = response.body();
         String locationSetting = Utility.getPreferredLocation(context);
@@ -236,7 +242,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, low);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, description);
             weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, weatherId);
-
             cVVector.add(weatherValues);
         }
         // add to database

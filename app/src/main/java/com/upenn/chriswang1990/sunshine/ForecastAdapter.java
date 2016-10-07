@@ -31,7 +31,7 @@ import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
- * from a {@link android.database.Cursor} to a {@link android.widget.ListView}.
+ * from a {@link android.database.Cursor} to a {@link RecyclerView}.
  */
 public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHolder> {
 
@@ -202,18 +202,17 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.ViewHo
         if (viewType == VIEW_TYPE_SELECTED) {
             view.setBackgroundResource(R.drawable.touch_selector_activated);
         }
-        ViewHolder viewHolder = new ViewHolder(view);
-        return viewHolder;
+        return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder viewHolder, final int position) {
-        mCursor.moveToPosition(position);
+        mCursor.moveToPosition(viewHolder.getAdapterPosition());
         final int normalizedDate = mCursor.getInt(ForecastFragment.COL_WEATHER_DATE);
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setSelectedPosition(position);
+                setSelectedPosition(viewHolder.getAdapterPosition());
                 String locationSetting = Utility.getPreferredLocation(mContext);
                 ((UriCallback) mContext).onItemSelected(WeatherContract.WeatherEntry.
                         buildWeatherLocationWithDate(locationSetting, normalizedDate));

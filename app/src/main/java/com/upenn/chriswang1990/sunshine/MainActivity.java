@@ -28,7 +28,6 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 
 public class MainActivity extends AppCompatActivity implements ForecastAdapter.UriCallback, ForecastAdapter.PositionCallback{
 
-    private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private String mLocation;
     private boolean mTwoPane;
@@ -96,10 +95,10 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
                 ff.onLocationChanged();
             }
             if (mTwoPane) {
-                DetailFragment df = (DetailFragment) getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
-                if (df != null) {
-                    df.onLocationChanged();
-                }
+                DetailFragment detailFragment = new DetailFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, detailFragment, DETAILFRAGMENT_TAG)
+                        .commit();
             }
             mLocation = location;
             Utility.setLastLocation(this, location);

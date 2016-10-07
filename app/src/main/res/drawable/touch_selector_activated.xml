@@ -5,10 +5,10 @@
         android:drawable="@color/primary_light" />
 
     <!-- When the view is "activated".  In SINGLE_CHOICE_MODE, it flags the active row
-         of a ListView -->
+         of a RecyclerView -->
     <item android:state_activated="true"
         android:drawable="@color/primary_light" />
 
-    <!-- Default, "just hangin' out" state. -->
+    <!-- Default state. -->
     <item android:drawable="@color/primary" />
 </selector>

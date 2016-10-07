@@ -52,7 +52,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
     View rootView, emptyView;
 
     private int mPosition = RecyclerView.NO_POSITION;
@@ -138,8 +137,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview_forecast);
         emptyView = rootView.findViewById(R.id.recyclerview_forecast_empty);
         isCursorEmpty();
-        mLayoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(mForecastAdapter);
         // If there's instance state, mine it for useful information.
         // The end-goal here is that the user never knows that turning their device sideways
@@ -165,7 +163,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     void onLocationChanged() {
         mPosition = 0;
-        restartLoader();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
     @Override
@@ -260,10 +258,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         if (key.equals(getString(R.string.pref_location_status_key))) {
             updateEmptyView();
         }
-    }
-
-    public void restartLoader() {
-        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
     private void updateWeather() {

@@ -103,7 +103,7 @@
     <string name="empty_forecast_list_no_network">No weather information available. The network is not available to fetch weather data.</string>
     <string name="empty_forecast_list_server_down">No weather information available. The server is not returning data. Please wait or try refreshing</string>
     <string name="empty_forecast_list_server_error">No weather information available. The server is not returning valid data. Please check for an updated version of Sunshine.</string>
-    <string name="empty_forecast_list_invalid">No weather information available. The location in settings is not recognized or the server is not returning valid data. Please check the settings and get an updated version of Sunshine.</string>
+    <string name="empty_forecast_list_invalid">No weather information available. The location in settings is not recognized or the server is not returning valid data. Please check the location setting and get an updated version of Sunshine.</string>
     <!-- A11y -->
     <string name="a11y_city_name">City name: <xliff:g id="city">%1$s</xliff:g></string>
     <string name="a11y_forecast">Forecast: <xliff:g id="condition">%1$s</xliff:g></string>
@@ -179,5 +179,6 @@
     <string name="last_location_key">last-location</string>
     <!-- Timezone warning when timezone info is missing -->
     <string name="timezone_warning">Timezone information not valid, the weather data may not be consistent with the date</string>
+    <string name="sunshine_logo">Sunshine logo</string>
 
 </resources>

@@ -30,7 +30,7 @@
         <item name="popupTheme">@style/Theme.AppCompat.Light</item>
     </style>
 
-    <!-- Style for forecast listview -->
+    <!-- Style for forecast RecyclerView -->
     <style name="ForecastListStyle">
         <!-- Here it's a stub.  In screens of sufficient width, this style includes modifications
         for two-pane layout -->

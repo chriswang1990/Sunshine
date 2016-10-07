@@ -22,7 +22,7 @@ import android.os.IBinder;
 
 public class SunshineSyncService extends Service {
     private static final Object sSyncAdapterLock = new Object();
-    private static SunshineSyncAdapter sSunshineSyncAdapter = null;
+    private SunshineSyncAdapter sSunshineSyncAdapter = null;
 
     @Override
     public void onCreate() {

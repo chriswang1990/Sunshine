@@ -26,7 +26,6 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,11 +44,9 @@ import com.upenn.chriswang1990.sunshine.data.WeatherContract;
 public class DetailFragment extends Fragment implements LoaderManager
         .LoaderCallbacks<Cursor> {
 
-    private static final String LOG_TAG = DetailFragment.class.getSimpleName();
     static final String DETAIL_URI = "URI";
     private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
 
-    private ShareActionProvider mShareActionProvider;
     private String forecastStr;
     private Uri mUri;
     private static final int DETAIL_LOADER = 0;
@@ -245,11 +242,6 @@ public class DetailFragment extends Fragment implements LoaderManager
             mPressureLabelView.setContentDescription(mPressureView.getContentDescription());
 
             forecastStr = String.format(getContext().getString(R.string.format_share_string), cityName, dateText, description, highString, lowString);
-
-            // If onCreateOptionsMenu has already happened, we need to update the share intent now.
-            if (mShareActionProvider != null) {
-                mShareActionProvider.setShareIntent(createShareForecastIntent());
-            }
 
             AppCompatActivity activity = (AppCompatActivity)getActivity();
             Toolbar toolbarView = (Toolbar) getView().findViewById(R.id.toolbar);
