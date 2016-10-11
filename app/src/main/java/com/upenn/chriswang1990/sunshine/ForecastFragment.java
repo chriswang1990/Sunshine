@@ -136,7 +136,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // Get a reference to the RecyclerView, and attach this adapter to it.
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview_forecast);
         emptyView = rootView.findViewById(R.id.recyclerview_forecast_empty);
-        isCursorEmpty();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mRecyclerView.setAdapter(mForecastAdapter);
         // If there's instance state, mine it for useful information.
@@ -202,16 +201,22 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mForecastAdapter.swapCursor(data);
-        isCursorEmpty();
-        if (mPosition != RecyclerView.NO_POSITION) {
-            // If we don't need to restart the loader, and there's a desired position to restore
-            // to, do so now.
-            mRecyclerView.smoothScrollToPosition(mPosition);
-            mForecastAdapter.setSelectedPosition(mPosition);
-        }
-        updateEmptyView();
-        if (!Utility.getTimezoneStatus(getActivity())) {
-            Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+        if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+            updateEmptyView();
+        } else {
+            emptyView.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+            if (!Utility.getTimezoneStatus(getActivity())) {
+                Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+            }
+            if (mPosition != RecyclerView.NO_POSITION) {
+                // If we don't need to restart the loader, and there's a desired position to restore
+                // to, do so now.
+                mRecyclerView.smoothScrollToPosition(mPosition);
+                mForecastAdapter.setSelectedPosition(mPosition);
+            }
         }
     }
 
@@ -231,26 +236,25 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateEmptyView() {
-        if (mForecastAdapter.getItemCount() == 0) {
-            TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
-            if (null != tv) {
-                int message = R.string.empty_forecast_list;
-                @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
-                switch (location) {
-                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
-                        message = R.string.empty_forecast_list_server_down;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
-                        message = R.string.empty_forecast_list_invalid;
-                        break;
-                    default:
-                        if (!Utility.isNetworkAvailable(getActivity())) {
-                            message = R.string.empty_forecast_list_no_network;
-                        }
-                }
-                tv.setText(message);
+        TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
+        if (null != tv) {
+            int message = R.string.empty_forecast_list;
+            @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+            switch (location) {
+                case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                    message = R.string.empty_forecast_list_server_down;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                    message = R.string.empty_forecast_list_invalid;
+                    break;
+                default:
+                    if (!Utility.isNetworkAvailable(getActivity())) {
+                        message = R.string.empty_forecast_list_no_network;
+                    }
             }
+            tv.setText(message);
         }
+
     }
 
     @Override
@@ -262,18 +266,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
     private void updateWeather() {
         SunshineSyncAdapter.syncImmediately(getActivity());
-    }
-
-    public boolean isCursorEmpty() {
-        if (mForecastAdapter.getItemCount() == 0) {
-            mRecyclerView.setVisibility(View.GONE);
-            emptyView.setVisibility(View.VISIBLE);
-            return true;
-        } else {
-            emptyView.setVisibility(View.GONE);
-            mRecyclerView.setVisibility(View.VISIBLE);
-            return false;
-        }
     }
 
     public void initializeData() {
