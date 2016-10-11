@@ -68,8 +68,7 @@ public class Utility {
 
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(context.getString(R.string.pref_location_key),
-                context.getString(R.string.pref_location_default));
+        return prefs.getString(context.getString(R.string.pref_location_key), "");
     }
 
     public static void setLastLocation(Context context,
@@ -80,7 +79,7 @@ public class Utility {
     public static String getLastLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.last_location_key),
-                context.getString(R.string.pref_location_default));
+                "");
     }
 
     public static boolean isMetric(Context context) {
@@ -104,14 +103,14 @@ public class Utility {
         return prefs.getLong(dataSyncKey, 0);
     }
 
-    public static void setIsLocationChanged(Context context, boolean isLocationChanged) {
+    public static void setIsLocationSet(Context context, boolean isLocationChanged) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(context.getString(R.string.pref_is_default_location_changed), isLocationChanged);
         editor.commit();
     }
 
-    public static boolean getIsLocationChanged(Context context) {
+    public static boolean getIsLocationSet(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getBoolean(context.getString(R.string.pref_is_default_location_changed), false);
     }
@@ -544,6 +543,20 @@ public class Utility {
         ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activityNetwork = cm.getActiveNetworkInfo();
         return activityNetwork != null && activityNetwork.isConnectedOrConnecting();
+    }
+
+    /**
+     * Sets the location status into shared preference.  This function should not be called from
+     * the UI thread because it uses commit to write to the shared preferences.
+     *
+     * @param c              Context to get the PreferenceManager from.
+     * @param locationStatus The IntDef value to set
+     */
+    public static void setLocationStatus(Context c, @SunshineSyncAdapter.LocationStatus int locationStatus) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
+        SharedPreferences.Editor spe = sp.edit();
+        spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
+        spe.apply();
     }
 
     /**

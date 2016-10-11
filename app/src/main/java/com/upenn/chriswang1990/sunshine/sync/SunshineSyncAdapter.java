@@ -62,7 +62,6 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import rx.Observable;
 import rx.Subscriber;
-import rx.Subscription;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
@@ -74,8 +73,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private Context context = getContext();
     private String mTimezoneID = "";
-    private Subscription timezoneSubscription;
-    private Subscription weatherSubscrition;
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -94,7 +91,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     //Location status annotation
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID})
+    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID, LOCATION_STATUS_NOT_SET})
     public @interface LocationStatus {
     }
 
@@ -102,6 +99,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int LOCATION_STATUS_SERVER_DOWN = 1;
     public static final int LOCATION_STATUS_INVALID = 2;
     public static final int LOCATION_STATUS_UNKNOWN = 3;
+    public static final int LOCATION_STATUS_NOT_SET = 4;
 
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -109,6 +107,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
+        //Do nothing if location is not yet set!
+        if (Utility.getPreferredLocation(context).equals("")) {
+            return;
+        }
         //refreshing last sync time
         Utility.setLastDataSync(context);
         //Initialize the timezone status when refreshing
@@ -123,7 +125,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                     @Override
                     public void onError(Throwable e) {
-                        setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+                        Utility.setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
                     }
 
                     @Override
@@ -156,7 +158,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                                         }
                                     });
                         } else {
-                            setLocationStatus(context, LOCATION_STATUS_INVALID);
+                            Utility.setLocationStatus(context, LOCATION_STATUS_INVALID);
                         }
                     }
                 });
@@ -267,7 +269,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                             / 1000, timezoneID) - 1)});
             notifyWeather();
         }
-        setLocationStatus(context, LOCATION_STATUS_OK);
+        Utility.setLocationStatus(context, LOCATION_STATUS_OK);
     }
 
     private void notifyWeather() {
@@ -482,20 +484,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static void initializeSyncAdapter(Context context) {
         getSyncAccount(context);
-    }
-
-    /**
-     * Sets the location status into shared preference.  This function should not be called from
-     * the UI thread because it uses commit to write to the shared preferences.
-     *
-     * @param c              Context to get the PreferenceManager from.
-     * @param locationStatus The IntDef value to set
-     */
-    private static void setLocationStatus(Context c, @LocationStatus int locationStatus) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
-        SharedPreferences.Editor spe = sp.edit();
-        spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
-        spe.apply();
     }
 
     /**

@@ -19,11 +19,9 @@ package com.upenn.chriswang1990.sunshine;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -47,7 +45,7 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link RecyclerView} layout.
  */
-public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, SharedPreferences.OnSharedPreferenceChangeListener {
+public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
@@ -93,20 +91,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onResume() {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences((getActivity()));
-        sp.registerOnSharedPreferenceChangeListener(this);
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences((getActivity()));
-        sp.unregisterOnSharedPreferenceChangeListener(this);
-        super.onPause();
     }
 
     @Override
@@ -241,11 +225,17 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             int message = R.string.empty_forecast_list;
             @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
             switch (location) {
+                case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                    message = R.string.empty_forecast_list_server_unknown;
+                    break;
                 case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
                     message = R.string.empty_forecast_list_server_down;
                     break;
                 case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
                     message = R.string.empty_forecast_list_invalid;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
+                    message = R.string.empty_forecast_welcome;
                     break;
                 default:
                     if (!Utility.isNetworkAvailable(getActivity())) {
@@ -255,13 +245,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             tv.setText(message);
         }
 
-    }
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(getString(R.string.pref_location_status_key))) {
-            updateEmptyView();
-        }
     }
 
     private void updateWeather() {
