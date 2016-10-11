@@ -495,7 +495,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
-        spe.commit();
+        spe.apply();
     }
 
     /**
@@ -505,10 +505,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param c              Context to get the PreferenceManager from.
      * @param timezoneStatus The IntDef value to set
      */
-    private static void setTimezoneStatus(Context c, boolean timezoneStatus) {
+    public static void setTimezoneStatus(Context c, boolean timezoneStatus) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putBoolean(c.getString(R.string.pref_timezone_status_key), timezoneStatus);
-        spe.commit();
+        spe.apply();
     }
 }
