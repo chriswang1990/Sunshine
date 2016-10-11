@@ -17,7 +17,7 @@
     android:layout_height="match_parent">
 
     <com.upenn.chriswang1990.sunshine.LocationEditTextPreference
-        android:defaultValue="@string/pref_location_default"
+        android:defaultValue="*"
         android:inputType="text"
         android:key="@string/pref_location_key"
         android:singleLine="true"

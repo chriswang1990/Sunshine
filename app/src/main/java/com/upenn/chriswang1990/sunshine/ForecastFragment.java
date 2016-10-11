@@ -102,8 +102,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            updateWeather();
-            getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+            if (Utility.getLocationStatus(getActivity()) == SunshineSyncAdapter.LOCATION_STATUS_NOT_SET) {
+                Toast.makeText(getActivity(), R.string.location_not_set_warning, Toast.LENGTH_LONG).show();
+            } else {
+                updateWeather();
+                getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
+            }
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -185,14 +189,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mForecastAdapter.swapCursor(data);
-        if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
+        if (data == null || !data.moveToFirst()) {
             mRecyclerView.setVisibility(View.GONE);
             emptyView.setVisibility(View.VISIBLE);
             updateEmptyView();
         } else {
             emptyView.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
-            if (!Utility.getTimezoneStatus(getActivity())) {
+            if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
+                Toast.makeText(getActivity(), R.string.location_not_updated_warning, Toast.LENGTH_LONG).show();
+            } else if (!Utility.getTimezoneStatus(getActivity())) {
                 Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
             }
             if (mPosition != RecyclerView.NO_POSITION) {
@@ -222,29 +228,30 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private void updateEmptyView() {
         TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
         if (null != tv) {
-            int message = R.string.empty_forecast_list;
-            @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
-            switch (location) {
-                case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
-                    message = R.string.empty_forecast_list_server_unknown;
-                    break;
-                case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
-                    message = R.string.empty_forecast_list_server_down;
-                    break;
-                case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
-                    message = R.string.empty_forecast_list_invalid;
-                    break;
-                case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
-                    message = R.string.empty_forecast_welcome;
-                    break;
-                default:
-                    if (!Utility.isNetworkAvailable(getActivity())) {
-                        message = R.string.empty_forecast_list_no_network;
-                    }
+            int message;
+            if (!Utility.isNetworkAvailable(getActivity())) {
+                message = R.string.empty_forecast_list_no_network;
+            } else {
+                @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+                switch (location) {
+                    case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                        message = R.string.empty_forecast_list_server_unknown;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                        message = R.string.empty_forecast_list_server_down;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                        message = R.string.empty_forecast_list_invalid;
+                        break;
+                    case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
+                        message = R.string.empty_forecast_welcome;
+                        break;
+                    default:
+                        message = R.string.empty_forecast_list;
+                }
             }
             tv.setText(message);
         }
-
     }
 
     private void updateWeather() {

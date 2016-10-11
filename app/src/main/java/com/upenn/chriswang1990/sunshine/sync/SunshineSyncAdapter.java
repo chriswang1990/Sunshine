@@ -107,8 +107,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        //Do nothing if location is not yet set!
-        if (Utility.getPreferredLocation(context).equals("")) {
+        //Do nothing if location is not set or no network condition
+        if (Utility.getPreferredLocation(context).equals("*") || !Utility.isNetworkAvailable(context)) {
             return;
         }
         //refreshing last sync time

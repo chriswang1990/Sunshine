@@ -68,18 +68,19 @@ public class Utility {
 
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(context.getString(R.string.pref_location_key), "");
+        return prefs.getString(context.getString(R.string.pref_location_key), "*");
     }
 
     public static void setLastLocation(Context context,
                                        String lastLocation) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(context.getString(R.string.last_location_key), lastLocation).apply();
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().putString(context.getString(R.string.last_location_key), lastLocation).apply();
     }
 
     public static String getLastLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.last_location_key),
-                "");
+                "*");
     }
 
     public static boolean isMetric(Context context) {
@@ -556,7 +557,7 @@ public class Utility {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(c);
         SharedPreferences.Editor spe = sp.edit();
         spe.putInt(c.getString(R.string.pref_location_status_key), locationStatus);
-        spe.apply();
+        spe.commit();
     }
 
     /**

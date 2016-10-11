@@ -107,6 +107,12 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
                     break;
                 case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
                     preference.setSummary(getString(R.string.pref_location_server_down_description, value.toString()));
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
+                    preference.setSummary(getString(R.string.pref_location_not_set_description));
+                    break;
+                default:
+                    preference.setSummary(stringValue);
             }
         } else {
             // For other preferences, set the summary to the value's simple string representation.
