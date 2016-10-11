@@ -41,7 +41,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.IntDef;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.util.Log;
 
 import com.upenn.chriswang1990.sunshine.BuildConfig;
 import com.upenn.chriswang1990.sunshine.MainActivity;
@@ -57,11 +56,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Vector;
 
-import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import rx.Observable;
+import rx.Subscriber;
+import rx.Subscription;
+import rx.schedulers.Schedulers;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
@@ -73,6 +75,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private Context context = getContext();
     private String mTimezoneID = "";
+    private Subscription timezoneSubscription;
+    private Subscription weatherSubscrition;
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -113,8 +117,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         // We no longer need just the location String, but also potentially the latitude and
         // longitude, in case we are syncing based on a new Place Picker API result.
         final String locationQuery = Utility.getPreferredLocation(context);
-        String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
-        String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
         String format = "json";
         String units = "metric";
         int numDays = 14;
@@ -122,34 +124,36 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(WeatherAPI.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         WeatherAPI weatherAPI = retrofit.create(WeatherAPI.class);
-        Call<WeatherResponse> weatherCall;
+        Observable<Response<WeatherResponse>> weatherCall;
         if (Utility.isLocationLatLonAvailable(context)) {
+            String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
+            String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
             weatherCall = weatherAPI.getResponse(null, locationLatitude, locationLongitude, format, units, numDays, BuildConfig.OPEN_WEATHER_MAP_API_KEY);
         } else {
             weatherCall = weatherAPI.getResponse(locationQuery, null, null, format, units, numDays, BuildConfig.OPEN_WEATHER_MAP_API_KEY);
         }
 
-        Log.d("weather API call URL", weatherCall.request().url().toString());
-        weatherCall.enqueue(new Callback<WeatherResponse>() {
+        weatherSubscrition = weatherCall.subscribe(new Subscriber<Response<WeatherResponse>>() {
             @Override
-            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                if (response.isSuccessful()) {
-                    //When the weather call is successful, call the fetchTimezoneIDAndProcessData and let it
-                    // handle the rest
-                    fetchTimezoneIDAndProcessData(response);
-                } else {
-                    //When the server response but returned JSON is invalid, can happen when
-                    // location is not valid or API has changed format
-                    setLocationStatus(context, LOCATION_STATUS_INVALID);
-                }
+            public void onCompleted() {
+
             }
 
             @Override
-            public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                //Usually network connection or server problem here
+            public void onError(Throwable e) {
                 setLocationStatus(context, LOCATION_STATUS_SERVER_DOWN);
+            }
+
+            @Override
+            public void onNext(Response<WeatherResponse> response) {
+                if (response.isSuccessful()) {
+                    fetchTimezoneIDAndUpdateData(response);
+                } else {
+                    setLocationStatus(context, LOCATION_STATUS_INVALID);
+                }
             }
         });
     }
@@ -158,38 +162,46 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Get the mTimezoneID from google API by city lat and lon from weatherResponse, then process
      * the data and store in SQL Database
      */
-    private void fetchTimezoneIDAndProcessData(final Response<WeatherResponse> weatherResponse) {
-        String latAndLon = weatherResponse.body().getCity().getCoord().getLat() +
-                "," + weatherResponse.body().getCity().getCoord().getLon();
-
+    private void fetchTimezoneIDAndUpdateData(final Response<WeatherResponse> weatherResponse) {
+        String latAndLon;
+        if (Utility.isLocationLatLonAvailable(context)) {
+            String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
+            String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
+            latAndLon = locationLatitude + "," + locationLongitude;
+        } else {
+            latAndLon = weatherResponse.body().getCity().getCoord().getLat() +
+                    "," + weatherResponse.body().getCity().getCoord().getLon();
+        }
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(TimezoneAPI.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         TimezoneAPI timezoneAPI = retrofit.create(TimezoneAPI.class);
-        Call<TimezoneResponse> timezoneCall = timezoneAPI.getResponse(latAndLon, Long.toString(System.currentTimeMillis() / 1000), BuildConfig.GOOGLE_ANDROID_API_KEY);
-        Log.d("weather API call URL", timezoneCall.request().url().toString());
-        timezoneCall.enqueue(new Callback<TimezoneResponse>() {
+        Observable<TimezoneResponse> timezoneCall = timezoneAPI.getResponse(latAndLon,
+                Long.toString(System.currentTimeMillis() / 1000),
+                BuildConfig.GOOGLE_ANDROID_API_KEY);
+        timezoneSubscription = timezoneCall
+                .observeOn(Schedulers.computation())
+                .subscribe(new Subscriber<TimezoneResponse>() {
             @Override
-            public void onResponse(Call<TimezoneResponse> call, Response<TimezoneResponse> response) {
-                if (response.isSuccessful()) {
-                    mTimezoneID = response.body().getTimeZoneId();
-                    Log.d("Returned timezone ID", mTimezoneID);
-                    setTimezoneStatus(context, true);
-                    //Save the weather and timezone data to the database
-                    saveToDatabase(weatherResponse, mTimezoneID);
-                } else {
-                    saveToDatabase(weatherResponse, "");
-                    //When API failed to return correct info, update the timezone status to notify user
-                    setTimezoneStatus(context, false);
-                }
+            public void onCompleted() {
+
             }
 
             @Override
-            public void onFailure(Call<TimezoneResponse> call, Throwable t) {
-                t.printStackTrace();
+            public void onError(Throwable e) {
                 saveToDatabase(weatherResponse, "");
+                //When API failed to return correct info, update the timezone status to notify user
                 setTimezoneStatus(context, false);
+            }
+
+            @Override
+            public void onNext(TimezoneResponse timezoneResponse) {
+                mTimezoneID = timezoneResponse.getTimeZoneId();
+                setTimezoneStatus(context, true);
+                //Save the weather and timezone data to the database
+                saveToDatabase(weatherResponse, mTimezoneID);
             }
         });
     }

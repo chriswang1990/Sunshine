@@ -46,6 +46,8 @@
     <!-- Strings used when displaying the state of the Location in settings -->
     <string name="pref_location_error_description">Invalid Location or server error(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_unknown_description">Validating Location \u2026(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_server_down_description">Server is currently down(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+
 
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
     <string name="pref_units_label">Unit Setting</string>
