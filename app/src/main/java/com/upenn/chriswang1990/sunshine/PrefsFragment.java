@@ -108,6 +108,9 @@ public class PrefsFragment extends PreferenceFragment implements Preference.OnPr
                 case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
                     preference.setSummary(getString(R.string.pref_location_server_down_description, value.toString()));
                     break;
+                case SunshineSyncAdapter.LOCATION_STATUS_NO_NETWORK:
+                    preference.setSummary(getString(R.string.pref_location_no_network_description, value.toString()));
+                    break;
                 case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
                     preference.setSummary(getString(R.string.pref_location_not_set_description));
                     break;

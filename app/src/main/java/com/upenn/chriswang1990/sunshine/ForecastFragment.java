@@ -50,6 +50,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
+    private boolean showToast;
     View rootView, emptyView;
 
     private int mPosition = RecyclerView.NO_POSITION;
@@ -102,10 +103,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            if (Utility.getLocationStatus(getActivity()) == SunshineSyncAdapter.LOCATION_STATUS_NOT_SET) {
+            if (!Utility.isLocationSet(getActivity())) {
                 Toast.makeText(getActivity(), R.string.location_not_set_warning, Toast.LENGTH_LONG).show();
             } else {
                 updateWeather();
+                showToast = true;
                 getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
             }
             return true;
@@ -144,12 +146,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     public void onActivityCreated(Bundle savedInstanceState) {
         //update weather if it's more than one day since last weather sync
         //initializeData();
+        showToast = false;
         getLoaderManager().initLoader(FORECAST_LOADER, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     void onLocationChanged() {
         mPosition = 0;
+        showToast = true;
         getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
@@ -196,10 +200,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         } else {
             emptyView.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
-            if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
-                Toast.makeText(getActivity(), R.string.location_not_updated_warning, Toast.LENGTH_LONG).show();
-            } else if (!Utility.getTimezoneStatus(getActivity())) {
-                Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+            if (showToast) {
+                if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
+                    Toast.makeText(getActivity(), R.string.location_not_updated_warning, Toast.LENGTH_LONG).show();
+                } else if (!Utility.getTimezoneStatus(getActivity())) {
+                    Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+                }
             }
             if (mPosition != RecyclerView.NO_POSITION) {
                 // If we don't need to restart the loader, and there's a desired position to restore
@@ -208,6 +214,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 mForecastAdapter.setSelectedPosition(mPosition);
             }
         }
+        showToast = false;
     }
 
     @Override
@@ -229,27 +236,27 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
         if (null != tv) {
             int message;
-            if (!Utility.isNetworkAvailable(getActivity())) {
-                message = R.string.empty_forecast_list_no_network;
-            } else {
-                @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
-                switch (location) {
-                    case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
-                        message = R.string.empty_forecast_list_server_unknown;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
-                        message = R.string.empty_forecast_list_server_down;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
-                        message = R.string.empty_forecast_list_invalid;
-                        break;
-                    case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
-                        message = R.string.empty_forecast_welcome;
-                        break;
-                    default:
-                        message = R.string.empty_forecast_list;
-                }
+            @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+            switch (location) {
+                case SunshineSyncAdapter.LOCATION_STATUS_NO_NETWORK:
+                    message = R.string.empty_forecast_list_no_network;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                    message = R.string.empty_forecast_list_server_unknown;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_SERVER_DOWN:
+                    message = R.string.empty_forecast_list_server_down;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_INVALID:
+                    message = R.string.empty_forecast_list_invalid;
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_NOT_SET:
+                    message = R.string.empty_forecast_welcome;
+                    break;
+                default:
+                    message = R.string.empty_forecast_list;
             }
+
             tv.setText(message);
         }
     }

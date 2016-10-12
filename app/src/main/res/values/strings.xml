@@ -47,6 +47,7 @@
     <string name="pref_location_error_description">Invalid Location or server error(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_unknown_description">Validating Location \u2026(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_server_down_description">Server is currently down(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
+    <string name="pref_location_no_network_description">No network connection(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_not_set_description">Please set your location here"</string>
 
 
@@ -104,7 +105,7 @@
     <string name="pref_enable_notifications_default" translatable="false">true</string>
 
     <string name="empty_forecast_list">No weather information available. Please wait or try refreshing</string>
-    <string name="empty_forecast_welcome">Welcome to Sunshine! Please set up your location in settings!</string>
+    <string name="empty_forecast_welcome">Welcome to Sunshine! Please set up your location in settings! (top right menu)</string>
     <string name="empty_forecast_list_no_network">No weather information available. The network is not available to fetch weather data.</string>
     <string name="empty_forecast_list_server_unknown">Updating weather data, please wait or try refreshing</string>
     <string name="empty_forecast_list_server_down">No weather information available. The server is not returning data. Please wait or try refreshing</string>

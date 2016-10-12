@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapter.U
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mLocation = Utility.getLastLocation(this);
-        if (mLocation.equals("*")) {
+        if (!Utility.isLocationSet(this)) {
             Utility.setLocationStatus(this, SunshineSyncAdapter.LOCATION_STATUS_NOT_SET);
         } else if (Utility.getLocationStatus(this) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
             SunshineSyncAdapter.syncImmediately(this);

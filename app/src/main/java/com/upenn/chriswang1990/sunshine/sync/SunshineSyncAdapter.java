@@ -91,7 +91,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     //Location status annotation
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID, LOCATION_STATUS_NOT_SET})
+    @IntDef({LOCATION_STATUS_OK, LOCATION_STATUS_SERVER_DOWN, LOCATION_STATUS_UNKNOWN, LOCATION_STATUS_INVALID, LOCATION_STATUS_NOT_SET, LOCATION_STATUS_NO_NETWORK})
     public @interface LocationStatus {
     }
 
@@ -100,6 +100,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int LOCATION_STATUS_INVALID = 2;
     public static final int LOCATION_STATUS_UNKNOWN = 3;
     public static final int LOCATION_STATUS_NOT_SET = 4;
+    public static final int LOCATION_STATUS_NO_NETWORK = 5;
+
 
     public SunshineSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -107,8 +109,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        //Do nothing if location is not set or no network condition
-        if (Utility.getPreferredLocation(context).equals("*") || !Utility.isNetworkAvailable(context)) {
+        //Do nothing if location is not set
+        if (!Utility.isLocationSet(context)) {
             return;
         }
         //refreshing last sync time
@@ -424,6 +426,11 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         Bundle bundle = new Bundle();
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        //Set status to no network when net work is not available
+        if (!Utility.isNetworkAvailable(context)){
+            Utility.setLocationStatus(context, LOCATION_STATUS_NO_NETWORK);
+            return;
+        }
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
     }

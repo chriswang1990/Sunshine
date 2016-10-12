@@ -104,16 +104,13 @@ public class Utility {
         return prefs.getLong(dataSyncKey, 0);
     }
 
-    public static void setIsLocationSet(Context context, boolean isLocationChanged) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(context.getString(R.string.pref_is_default_location_changed), isLocationChanged);
-        editor.commit();
-    }
-
-    public static boolean getIsLocationSet(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getBoolean(context.getString(R.string.pref_is_default_location_changed), false);
+    /**
+     * Check weather the location has been set
+     * @param context
+     * @return
+     */
+    public static boolean isLocationSet(Context context) {
+        return !getPreferredLocation(context).equals("*");
     }
 
     public static String getTimezoneID(Context context) {
