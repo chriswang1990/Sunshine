@@ -48,7 +48,7 @@
     <string name="pref_location_unknown_description">Validating Location \u2026(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_server_down_description">Server is currently down(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_no_network_description">No network connection(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
-    <string name="pref_location_not_set_description">Please set your location here</string>
+    <string name="pref_location_not_set_description">Please set your location</string>
 
 
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
@@ -185,7 +185,7 @@
     <string name="powered_by_google">Powered by Google</string>
     <string name="last_location_key">last-location</string>
     <!-- Timezone warning when timezone info is missing -->
-    <string name="timezone_warning">Timezone information not valid, the weather data may not be consistent with the date</string>
+    <string name="timezone_warning">Weather update success but the timezone information is not valid. The weather data may not be consistent with the date</string>
     <string name="location_not_set_warning">"Please set your location in settings to get weather info!"</string>
     <string name="location_not_updated_warning">"Weather is not updated due to network or server problem, please try it later."</string>
     <string name="location_update_success">"Weather update success!"</string>

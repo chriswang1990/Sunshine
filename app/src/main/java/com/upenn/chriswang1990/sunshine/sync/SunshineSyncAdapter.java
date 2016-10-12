@@ -432,7 +432,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         //Set status to no network when net work is not available
         if (!Utility.isNetworkAvailable(context)){
             Utility.setLocationStatus(context, LOCATION_STATUS_NO_NETWORK);
-            return;
         }
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
