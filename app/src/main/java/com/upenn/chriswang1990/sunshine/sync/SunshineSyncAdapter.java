@@ -64,7 +64,6 @@ import rx.Observable;
 import rx.Subscriber;
 
 public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
-    public final String LOG_TAG = SunshineSyncAdapter.class.getSimpleName();
     // Interval at which to sync with the weather, in seconds.
     // 60 seconds (1 minute) * 180 = 3 hours
     private static final int SYNC_INTERVAL = 60 * 180;
@@ -72,7 +71,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long DAY_IN_MILLIS = 1000 * 60 * 60 * 24;
     private static final int WEATHER_NOTIFICATION_ID = 3004;
     private Context context = getContext();
-    private String mTimezoneID = "";
 
     private static final String[] NOTIFY_WEATHER_PROJECTION = new String[]{
             WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
@@ -136,9 +134,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                             WeatherResponse.CityBean.CoordBean coord =
                                     response.body().getCity().getCoord();
                             String latAndLon = coord.getLat() + "," + coord.getLon();
-                            Observable<TimezoneResponse> timezoneObservable = fetchTimezoneID(latAndLon);
+                            Observable<Response<TimezoneResponse>> timezoneObservable = fetchTimezoneID(latAndLon);
                             timezoneObservable
-                                    .subscribe(new Subscriber<TimezoneResponse>() {
+                                    .subscribe(new Subscriber<Response<TimezoneResponse>>() {
                                         @Override
                                         public void onCompleted() {
 
@@ -146,17 +144,22 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
                                         @Override
                                         public void onError(Throwable e) {
-                                            saveToDatabase(response, "");
-                                            //When API failed to return correct info, update the timezone status to notify user
+                                            saveToDatabase(response, "America/Los_Angeles");
                                             setTimezoneStatus(context, false);
                                         }
 
                                         @Override
-                                        public void onNext(TimezoneResponse timezoneResponse) {
-                                            mTimezoneID = timezoneResponse.getTimeZoneId();
-                                            setTimezoneStatus(context, true);
-                                            //Save the weather and timezone data to the database
-                                            saveToDatabase(response, mTimezoneID);
+                                        public void onNext(Response<TimezoneResponse> timezoneResponse) {
+                                            String timezoneID;
+                                            if (timezoneResponse.isSuccessful()) {
+                                                timezoneID = timezoneResponse.body().getTimeZoneId();
+                                                setTimezoneStatus(context, true);
+                                                //Save the weather and timezone data to the database
+                                            } else {
+                                                timezoneID = "America/Los_Angeles";
+                                                setTimezoneStatus(context, false);
+                                            }
+                                            saveToDatabase(response, timezoneID);
                                         }
                                     });
                         } else {
@@ -195,14 +198,14 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
      * Get the mTimezoneID from google API by city lat and lon from weatherResponse, then process
      * the data and store in SQL Database
      */
-    private Observable<TimezoneResponse> fetchTimezoneID(String latAndLon) {
+    private Observable<Response<TimezoneResponse>> fetchTimezoneID(String latAndLon) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(TimezoneAPI.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .build();
         TimezoneAPI timezoneAPI = retrofit.create(TimezoneAPI.class);
-        Observable<TimezoneResponse> timezoneObservable = timezoneAPI.getResponse(latAndLon,
+        Observable<Response<TimezoneResponse>> timezoneObservable = timezoneAPI.getResponse(latAndLon,
                 Long.toString(System.currentTimeMillis() / 1000),
                 BuildConfig.GOOGLE_ANDROID_API_KEY);
         return timezoneObservable;
@@ -291,7 +294,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                 String locationQuery = Utility.getPreferredLocation(context);
                 String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
                 Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery
-                        , Utility.normalizeDate(System.currentTimeMillis() / 1000, mTimezoneID));
+                        , Utility.normalizeDate(System.currentTimeMillis() / 1000, Utility.getTimezoneID(context)));
 
                 // we'll query our contentProvider, as always
                 Cursor cursor = context.getContentResolver().query(weatherUri, NOTIFY_WEATHER_PROJECTION, null, null, null);
@@ -482,11 +485,6 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
          * Without calling setSyncAutomatically, our periodic sync will not be enabled.
          */
         ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
-
-        /*
-         * Finally, let's do a sync to get things started
-         */
-        syncImmediately(context);
     }
 
     public static void initializeSyncAdapter(Context context) {

@@ -18,7 +18,6 @@
 package com.upenn.chriswang1990.sunshine;
 
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,7 +43,6 @@ import com.upenn.chriswang1990.sunshine.sync.SunshineSyncAdapter;
  */
 public class ForecastFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
     private SwipeRefreshLayout swipeContainer;
@@ -256,37 +254,37 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-    public void initializeData() {
-        long lastDataSync = Utility.getLastDataSync(mContext);
-        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
-            SunshineSyncAdapter.syncImmediately(mContext);
-        }
-    }
+//    public void initializeData() {
+//        long lastDataSync = Utility.getLastDataSync(mContext);
+//        if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
+//            SunshineSyncAdapter.syncImmediately(mContext);
+//        }
+//    }
 
-    private void openPreferredLocationInMap() {
-        // Using the URI scheme for showing a location found on a map.  This super-handy
-        // intent can is detailed in the "Common Intents" page of Android's developer site:
-        // http://developer.android.com/guide/components/intents-common.html#Maps
-        if (null != mForecastAdapter) {
-            Cursor c = mForecastAdapter.getCursor();
-            if (null != c) {
-                c.moveToPosition(0);
-                String posLat = c.getString(COL_COORD_LAT);
-                String posLong = c.getString(COL_COORD_LONG);
-                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
-
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(geoLocation);
-
-                if (intent.resolveActivity(mContext.getPackageManager()) != null) {
-                    startActivity(intent);
-                } else {
-                    Context context = getContext();
-                    String warning = "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!";
-                    Utility.showAsToast(context, warning);
-                }
-            }
-        }
-    }
+//    private void openPreferredLocationInMap() {
+//        // Using the URI scheme for showing a location found on a map.  This super-handy
+//        // intent can is detailed in the "Common Intents" page of Android's developer site:
+//        // http://developer.android.com/guide/components/intents-common.html#Maps
+//        if (null != mForecastAdapter) {
+//            Cursor c = mForecastAdapter.getCursor();
+//            if (null != c) {
+//                c.moveToPosition(0);
+//                String posLat = c.getString(COL_COORD_LAT);
+//                String posLong = c.getString(COL_COORD_LONG);
+//                Uri geoLocation = Uri.parse("geo:" + posLat + "," + posLong);
+//
+//                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.setData(geoLocation);
+//
+//                if (intent.resolveActivity(mContext.getPackageManager()) != null) {
+//                    startActivity(intent);
+//                } else {
+//                    Context context = getContext();
+//                    String warning = "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!";
+//                    Utility.showAsToast(context, warning);
+//                }
+//            }
+//        }
+//    }
 }
 

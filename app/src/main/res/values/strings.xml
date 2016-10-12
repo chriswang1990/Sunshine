@@ -48,7 +48,7 @@
     <string name="pref_location_unknown_description">Validating Location \u2026(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_server_down_description">Server is currently down(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
     <string name="pref_location_no_network_description">No network connection(<xliff:g id="location_setting">%1$s</xliff:g>)"</string>
-    <string name="pref_location_not_set_description">Please set your location here"</string>
+    <string name="pref_location_not_set_description">Please set your location here</string>
 
 
     <string name="pref_location_default" translatable="false">Sunnyvale</string>
