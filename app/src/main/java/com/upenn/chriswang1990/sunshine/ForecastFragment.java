@@ -27,13 +27,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -50,8 +48,11 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String LOG_TAG = ForecastFragment.class.getSimpleName();
     private ForecastAdapter mForecastAdapter;
     private RecyclerView mRecyclerView;
+    private SwipeRefreshLayout swipeContainer;
+    private TextView emptyView;
     private boolean showToast;
-    View rootView, emptyView;
+    private Context mContext;
+    View rootView;
 
     private int mPosition = RecyclerView.NO_POSITION;
     private static final String SELECTED_KEY = "selected_position";
@@ -91,28 +92,6 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.forecast_fragment, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_refresh) {
-            if (!Utility.isLocationSet(getActivity())) {
-                Toast.makeText(getActivity(), R.string.location_not_set_warning, Toast.LENGTH_LONG).show();
-            } else {
-                updateWeather();
-                showToast = true;
-                getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
-            }
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -121,12 +100,28 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         // The ForecastAdapter will take data from a source and
         // use it to populate the RecyclerView it's attached to.
-        mForecastAdapter = new ForecastAdapter(getActivity(), null);
+        mContext = getActivity();
+        mForecastAdapter = new ForecastAdapter(mContext, null);
         rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        //Get the swipe refresh container view here
+        swipeContainer = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeContainer);
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (!Utility.isLocationSet(mContext)) {
+                    Toast.makeText(mContext, R.string.location_not_set_warning, Toast.LENGTH_LONG).show();
+                    swipeContainer.setRefreshing(false);
+                } else {
+                    SunshineSyncAdapter.syncImmediately(mContext);
+                    showToast = true;
+                    getLoaderManager().restartLoader(FORECAST_LOADER, null, ForecastFragment.this);
+                }
+            }
+        });
         // Get a reference to the RecyclerView, and attach this adapter to it.
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerview_forecast);
-        emptyView = rootView.findViewById(R.id.recyclerview_forecast_empty);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        emptyView = (TextView) rootView.findViewById(R.id.emptyview_forecast);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         mRecyclerView.setAdapter(mForecastAdapter);
         // If there's instance state, mine it for useful information.
         // The end-goal here is that the user never knows that turning their device sideways
@@ -175,14 +170,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
 
         // To only show current and future dates, filter the query to return weather only for
         // dates after or including today.
-        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String locationSetting = Utility.getPreferredLocation(mContext);
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
-        String timezoneID = Utility.getTimezoneID(getActivity());
+        String timezoneID = Utility.getTimezoneID(mContext);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry
                 .buildWeatherLocationWithStartDate(locationSetting, Utility.normalizeDate(System
                         .currentTimeMillis() / 1000, timezoneID));
         Log.d(LOG_TAG, "weatherURI: " + weatherForLocationUri.toString());
-        return new CursorLoader(getActivity(),
+        return new CursorLoader(mContext,
                 weatherForLocationUri,
                 FORECAST_COLUMNS,
                 null,
@@ -201,10 +196,12 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
             emptyView.setVisibility(View.GONE);
             mRecyclerView.setVisibility(View.VISIBLE);
             if (showToast) {
-                if (Utility.getLocationStatus(getActivity()) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
-                    Toast.makeText(getActivity(), R.string.location_not_updated_warning, Toast.LENGTH_LONG).show();
-                } else if (!Utility.getTimezoneStatus(getActivity())) {
-                    Toast.makeText(getActivity(), R.string.timezone_warning, Toast.LENGTH_LONG).show();
+                if (Utility.getLocationStatus(mContext) != SunshineSyncAdapter.LOCATION_STATUS_OK) {
+                    Toast.makeText(mContext, R.string.location_not_updated_warning, Toast.LENGTH_LONG).show();
+                } else if (!Utility.getTimezoneStatus(mContext)) {
+                    Toast.makeText(mContext, R.string.timezone_warning, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(mContext, R.string.location_update_success, Toast.LENGTH_SHORT).show();
                 }
             }
             if (mPosition != RecyclerView.NO_POSITION) {
@@ -214,6 +211,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 mForecastAdapter.setSelectedPosition(mPosition);
             }
         }
+        swipeContainer.setRefreshing(false);
         showToast = false;
     }
 
@@ -233,10 +231,9 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
     private void updateEmptyView() {
-        TextView tv = (TextView) getView().findViewById(R.id.recyclerview_forecast_empty);
-        if (null != tv) {
+        if (null != emptyView) {
             int message;
-            @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(getActivity());
+            @SunshineSyncAdapter.LocationStatus int location = Utility.getLocationStatus(mContext);
             switch (location) {
                 case SunshineSyncAdapter.LOCATION_STATUS_NO_NETWORK:
                     message = R.string.empty_forecast_list_no_network;
@@ -257,18 +254,14 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                     message = R.string.empty_forecast_list;
             }
 
-            tv.setText(message);
+            emptyView.setText(message);
         }
     }
 
-    private void updateWeather() {
-        SunshineSyncAdapter.syncImmediately(getActivity());
-    }
-
     public void initializeData() {
-        long lastDataSync = Utility.getLastDataSync(getActivity());
+        long lastDataSync = Utility.getLastDataSync(mContext);
         if (System.currentTimeMillis() - lastDataSync >= DAY_IN_MILLIS) {
-            updateWeather();
+            SunshineSyncAdapter.syncImmediately(mContext);
         }
     }
 
@@ -287,7 +280,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(geoLocation);
 
-                if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                if (intent.resolveActivity(mContext.getPackageManager()) != null) {
                     startActivity(intent);
                 } else {
                     Context context = getContext();

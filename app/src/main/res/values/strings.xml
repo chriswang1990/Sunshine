@@ -105,12 +105,12 @@
     <string name="pref_enable_notifications_default" translatable="false">true</string>
 
     <string name="empty_forecast_list">No weather information available. Please wait or try refreshing</string>
-    <string name="empty_forecast_welcome">Welcome to Sunshine! Please set up your location in settings! (top right menu)</string>
-    <string name="empty_forecast_list_no_network">No weather information available. The network is not available to fetch weather data.</string>
+    <string name="empty_forecast_welcome">Welcome to Sunshine! Please set up your location and units preference in settings! (top right menu)</string>
+    <string name="empty_forecast_list_no_network">Oops! The network is not available to fetch weather data.</string>
     <string name="empty_forecast_list_server_unknown">Updating weather data, please wait or try refreshing</string>
-    <string name="empty_forecast_list_server_down">No weather information available. The server is not returning data. Please wait or try refreshing</string>
-    <string name="empty_forecast_list_server_error">No weather information available. The server is not returning valid data. Please check for an updated version of Sunshine.</string>
-    <string name="empty_forecast_list_invalid">No weather information available. The location in settings is not recognized or the server is not returning valid data. Please check the location setting and get an updated version of Sunshine.</string>
+    <string name="empty_forecast_list_server_down">Oops! The server is not returning data. Please wait or try refreshing</string>
+    <string name="empty_forecast_list_server_error">Oops! The server is not returning valid data. Please check for an updated version of Sunshine.</string>
+    <string name="empty_forecast_list_invalid">Oops! The location in settings is not recognized or the server is not returning valid data. Please check the location setting and get an updated version of Sunshine.</string>
     <!-- A11y -->
     <string name="a11y_city_name">City name: <xliff:g id="city">%1$s</xliff:g></string>
     <string name="a11y_forecast">Forecast: <xliff:g id="condition">%1$s</xliff:g></string>
@@ -187,7 +187,8 @@
     <!-- Timezone warning when timezone info is missing -->
     <string name="timezone_warning">Timezone information not valid, the weather data may not be consistent with the date</string>
     <string name="location_not_set_warning">"Please set your location in settings to get weather info!"</string>
-    <string name="location_not_updated_warning">"Weather is not updated due to network or server problem, please try it later"</string>
+    <string name="location_not_updated_warning">"Weather is not updated due to network or server problem, please try it later."</string>
+    <string name="location_update_success">"Weather update success!"</string>
 
     <string name="sunshine_logo">Sunshine logo</string>
 
