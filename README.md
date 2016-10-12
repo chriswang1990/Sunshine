@@ -1,21 +1,13 @@
 # Sunshine
-#### Android Weather App - Udacity Android course project
+#### Android Weather App
 ##### Main features:
-* Call the ***OpenWeatherMap*** and ***Google Timezone API*** for weather and date data
+* Call the ***OpenWeatherMap*** and ***Google Timezone API*** for weather and date data with ***RxJava***, ***Retrofit2*** and ***GSON*** Libraries
 * Use ***SQLite*** database with customized ***content provider*** for weather data storage and query
-* use ***CursorAdapter** and ***Loader*** to load and display required data from database
+* Use ***CursorAdapter** and ***Loader*** to load and display required data from database
+* Implement the Main Fragment Layout with ***RecyclerView*** and ***SwipeRefreshLayout*** for best perfermance
+* Proper Error handling for all error cases including network, server, invalid input, etc., and give users suggetions when errors happen
 * Design GUI for hand-size device as well as tablet in both normal or land view, build a ***two-pane layout*** for tablet
-* Use ***SyncAdapter*** to synchronize the weather data in backgroud, also push notification to the user when new weather data are available
+* Use ***SyncAdapter*** to synchronize the weather data in backgroud, also push ***notification*** to the user when new weather data are available
 * Provide setting options for user to change location and units preferrence
 * Provide ***Map Location*** and ***Share*** option for user to find current location or share the weather information with others
 * Build the complete ***android test suite*** for database
-
-
-##### Several improvements to the original course project:
-* Call the ***Google timezone API*** to get the timezone ID for the query location, fix the bug that the app is not displaying correct local date and weather for the query location
-* Use Date class instead of the deprecated Time class for date, simplify the code and make date calculation more robust
-* (In in two-panel mode) The today entry is auto selected when the app startup or when user change location setting
-* Use the new toolbar Class instead of the deprecated ActionBar class, separate the activity and content layout XML accordingly 
-* Display city name in today list item view and detail fragment to remind user for weather location
-* Use PrefsFragment for Setting activity
-* Beautify the GUI with background color, text style and font family setting
