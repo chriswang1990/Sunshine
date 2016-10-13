@@ -1,4 +1,4 @@
-# Sunshine
+# Sunshine (Java, Android Studio, SQLite, RxJava, Retrofit)
 #### Android Weather App
 ##### Main features:
 * Call the ***OpenWeatherMap*** and ***Google Timezone API*** for weather and date data with ***RxJava***, ***Retrofit2*** and ***GSON*** Libraries
