@@ -1,6 +1,7 @@
 *.iml
 .gradle
-/local.properties
+/sunshine_keystore.jks
+/*.properties
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store

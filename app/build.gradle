@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 // Create a variable called keysPropertiesFile, and initialize it to your
 // keystore.properties file
-def keysPropertiesFile = rootProject.file("app/keys.properties")
+def keysPropertiesFile = rootProject.file("keys.properties")
 
 // Initialize a new Properties() object called keysProperties.
 def keysProperties = new Properties()
